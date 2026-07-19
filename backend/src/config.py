@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ───────────────────────── Model Config ───────────────────────── #
 # Open-vocabulary YOLO-E large seg. Auto-downloads on first YOLO() call (~100MB).
-WASTE_MODEL = os.getenv("WASTE_MODEL", "yoloe-11l-seg.pt")
+WASTE_MODEL = os.getenv("WASTE_MODEL", "yolov8s-world.pt")
 ROAD_TFLITE = BASE_DIR / "best_int8.tflite"
 
 # Road model inference
