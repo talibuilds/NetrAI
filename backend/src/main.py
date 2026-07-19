@@ -232,7 +232,7 @@ async def report(
         )
         inserted.append("pothole")
 
-    # ── Track Layer: Update Infrastructure Health Score
+    # ── Track Layer: Persistent Infrastructure Health Score & ML features
     total_sev = 0
     if waste_dets:
         total_sev += waste_sev * 0.3
@@ -240,21 +240,52 @@ async def report(
         total_sev += road_sev * 1.0
 
     if total_sev > 0:
-        db[ASSETS_COLL].update_many(
-            {
-                "geometry": {
-                    "$geoIntersects": {
-                        "$geometry": geo_point
-                    }
-                }
-            },
-            [{
-                "$set": {
-                    "health_score": {
-                        "$max": [0, {"$subtract": ["$health_score", total_sev * 0.1]}]
-                    }
-                }
-            }]
+        asset_id = f"asset_{coord_key}"
+        # Find existing asset or initialize with synthetic ML features
+        asset = db[ASSETS_COLL].find_one({"_id": asset_id})
+        if not asset:
+            import random
+            asset = {
+                "_id": asset_id,
+                "geometry": geo_point,
+                "name": f"Grid {coord_key}",
+                "health_score": 100.0,
+                "health_history": [{"date": now, "score": 100.0}],
+                "traffic_volume": random.randint(1000, 20000),
+                "rainfall_mm": random.randint(10, 150),
+                "road_age_days": random.randint(100, 3000),
+                "recent_damage_events": 0
+            }
+        
+        current_health = asset.get("health_score", 100.0)
+        # Decay health score
+        decay = total_sev * 0.1
+        new_health = max(0.0, current_health - decay)
+        
+        # Update damage events counter
+        new_damage_events = asset.get("recent_damage_events", 0) + 1
+        
+        # Append history
+        history = asset.get("health_history", [])
+        history.append({"date": now, "score": round(new_health, 2)})
+        
+        # Keep last 12 snapshots to prevent infinite array growth
+        if len(history) > 12:
+            history = history[-12:]
+            
+        db[ASSETS_COLL].update_one(
+            {"_id": asset_id},
+            {"$set": {
+                "geometry": geo_point,
+                "name": asset.get("name", f"Grid {coord_key}"),
+                "health_score": round(new_health, 2),
+                "health_history": history,
+                "traffic_volume": asset.get("traffic_volume"),
+                "rainfall_mm": asset.get("rainfall_mm"),
+                "road_age_days": asset.get("road_age_days"),
+                "recent_damage_events": new_damage_events
+            }},
+            upsert=True
         )
 
     # ── Stale-type sweep: if a prior scan at this exact spot flagged a type
@@ -384,18 +415,74 @@ def predict_asset(asset_id: str):
     if not asset:
         raise HTTPException(404, "Asset not found")
         
-    current_health = asset.get("health_score", 100)
+    current_health = asset.get("health_score", 100.0)
     traffic = asset.get("traffic_volume", 5000)
-    pois = asset.get("nearby_pois", 2)
+    rainfall = asset.get("rainfall_mm", 50)
+    road_age = asset.get("road_age_days", 1000)
+    damage_events = asset.get("recent_damage_events", 1)
     
-    predicted_health_t30 = predict_health_score(current_health, traffic, pois)
+    prediction = predict_health_score(current_health, traffic, rainfall, road_age, damage_events)
     
     return {
         "asset_id": asset_id,
         "current_health": current_health,
-        "predicted_health_t30": predicted_health_t30,
-        "traffic_volume": traffic,
-        "nearby_pois": pois
+        **prediction
+    }
+
+@app.get("/reports/{report_id}")
+def get_report(report_id: str):
+    db = _state.get("mongo")
+    if db is None:
+        raise HTTPException(500, "MongoDB not available")
+        
+    report = db[MONGO_COLL].find_one({"_id": report_id})
+    if not report:
+        raise HTTPException(404, "Report not found")
+        
+    # Get associated asset for this report's exact grid location
+    lng, lat = report["location"]["coordinates"]
+    coord_key = f"{lng},{lat}"
+    asset_id = f"asset_{coord_key}"
+    
+    asset = db[ASSETS_COLL].find_one({"_id": asset_id})
+    
+    prediction = None
+    health_history = []
+    current_health = 100.0
+    
+    if asset:
+        current_health = asset.get("health_score", 100.0)
+        health_history = asset.get("health_history", [])
+        
+        traffic = asset.get("traffic_volume", 5000)
+        rainfall = asset.get("rainfall_mm", 50)
+        road_age = asset.get("road_age_days", 1000)
+        damage_events = asset.get("recent_damage_events", 1)
+        
+        prediction = predict_health_score(current_health, traffic, rainfall, road_age, damage_events)
+    
+    # Serialize datetime fields for the JSON response
+    def _iso(dt):
+        return dt.isoformat() if dt else None
+        
+    report_data = {
+        "id": str(report.get("_id")),
+        "image": report.get("image"),
+        "coordinates": report["location"]["coordinates"],
+        "time": _iso(report.get("time")),
+        "severity_score": report.get("severity_score", 0.0),
+        "type": report.get("type"),
+        "status": report.get("status", "pending"),
+        "report_count": int(report.get("report_count", 1)),
+        "resolved": bool(report.get("resolved")),
+    }
+    
+    return {
+        "report": report_data,
+        "asset_id": asset_id,
+        "current_health": current_health,
+        "health_history": health_history,
+        "prediction": prediction
     }
 
 @app.get("/prioritize")
@@ -408,13 +495,17 @@ def prioritize_assets(limit: int = 10):
     results = []
     
     for a in assets:
-        current = a.get("health_score", 100)
+        current = a.get("health_score", 100.0)
         traffic = a.get("traffic_volume", 5000)
-        pois = a.get("nearby_pois", 2)
-        pred_t30 = predict_health_score(current, traffic, pois)
+        rainfall = a.get("rainfall_mm", 50)
+        road_age = a.get("road_age_days", 1000)
+        damage_events = a.get("recent_damage_events", 1)
+        
+        prediction = predict_health_score(current, traffic, rainfall, road_age, damage_events)
+        pred_t30 = prediction["future_health"]
         
         damage = 100 - pred_t30
-        priority_score = damage + (traffic / 1000) * 2 + pois * 5
+        priority_score = damage + (traffic / 1000) * 2 + damage_events * 5
         
         results.append({
             "asset_id": a["_id"],

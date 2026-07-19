@@ -15,17 +15,45 @@ def load_predict_model():
         _model = pickle.load(f)
     print(f"[predict] loaded XGBoost model from {MODEL_PATH}")
 
-def predict_health_score(health_score: float, traffic_volume: int, nearby_pois: int) -> float:
+def predict_health_score(health_score: float, traffic_volume: int, rainfall_mm: int, road_age_days: int, recent_damage_events: int) -> dict:
+    """
+    Returns a dictionary with the 30-day forecast, risk level, and estimated days until critical failure (0).
+    """
     if _model is None:
-        # Fallback heuristic if model isn't loaded
-        decay = (traffic_volume / 10000.0) * 5.0 + (100 - health_score) * 0.1 + (nearby_pois * 0.5)
-        return max(0.0, health_score - decay)
+        return {
+            "future_health": health_score,
+            "risk_level": "Unknown",
+            "predicted_repair_date_days": -1
+        }
         
-    df = pd.DataFrame({
-        'health_score': [health_score],
-        'traffic_volume': [traffic_volume],
-        'nearby_pois': [nearby_pois]
-    })
+    df = pd.DataFrame([{
+        'current_health': health_score,
+        'traffic_volume': traffic_volume,
+        'rainfall_mm': rainfall_mm,
+        'road_age_days': road_age_days,
+        'recent_damage_events': recent_damage_events
+    }])
     
-    pred = _model.predict(df)[0]
-    return max(0.0, min(100.0, float(pred)))
+    pred_t30 = _model.predict(df)[0]
+    pred_t30 = max(0.0, min(100.0, float(pred_t30)))
+    
+    if pred_t30 > 70:
+        risk = "Healthy"
+    elif pred_t30 > 40:
+        risk = "Medium"
+    else:
+        risk = "Critical"
+        
+    # Extrapolate days to 0 based on the 30-day decay rate
+    decay_30d = health_score - pred_t30
+    if decay_30d <= 0:
+        days_to_zero = 999
+    else:
+        daily_decay = decay_30d / 30.0
+        days_to_zero = int(pred_t30 / daily_decay)
+        
+    return {
+        "future_health": round(pred_t30, 2),
+        "risk_level": risk,
+        "predicted_repair_date_days": days_to_zero
+    }
