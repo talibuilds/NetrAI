@@ -28,24 +28,24 @@
   --input: rgba(0, 0, 0, 0.1);
   --ring: rgba(0, 0, 0, 0.3);
 
-  /* Verge design tokens — light */
-  --canvas: #eee8df;
-  --canvas-elevated: #f5f0e8;
-  --mint: #3cffd0;
-  --mint-fg: #006b5a;   /* dark teal — 5.5:1 contrast on warm canvas */
-  --ultraviolet: #5200ff;
-  --surface-slate: #e5ddd4;
-  --surface-container: #daeae4;
-  --surface-low: #e8f0ec;
-  --surface-lowest: #eff5f2;
-  --surface-high: #d8d0c7;
-  --surface-bright: #cec6bc;
-  --image-frame: #c8bfb5;
-  --secondary-text: #6b5f54;
-  --muted-text: #1c1714;
-  --deep-link: #3860be;
-  --purple-rule: #7340e0;
-  --console-mint: #1a6b52;
+  /* NetrAI design tokens — light */
+  --canvas: #f8fafc;
+  --canvas-elevated: #ffffff;
+  --mint: #0ea5e9;
+  --mint-fg: #0284c7;   
+  --ultraviolet: #8b5cf6;
+  --surface-slate: #ffffff;
+  --surface-container: #f1f5f9;
+  --surface-low: #e2e8f0;
+  --surface-lowest: #cbd5e1;
+  --surface-high: #94a3b8;
+  --surface-bright: #64748b;
+  --image-frame: #e2e8f0;
+  --secondary-text: #64748b;
+  --muted-text: #0f172a;
+  --deep-link: #0ea5e9;
+  --purple-rule: #8b5cf6;
+  --console-mint: #0ea5e9;
 }
 
 /* ── Dark theme ───────────────────────────────────────────── */
@@ -71,24 +71,24 @@
   --input: rgba(255, 255, 255, 0.15);
   --ring: rgba(255, 255, 255, 0.3);
 
-  /* Verge design tokens — dark */
-  --canvas: #131313;
-  --canvas-elevated: #1a1a1a;
-  --mint: #3cffd0;
-  --mint-fg: #3cffd0;   /* same as mint — excellent contrast on dark canvas */
-  --ultraviolet: #9b87f5;
-  --surface-slate: #2d2d2d;
-  --surface-container: #19211e;
-  --surface-low: #151d1a;
-  --surface-lowest: #08100d;
-  --surface-high: #232c28;
-  --surface-bright: #323b37;
-  --image-frame: #313131;
-  --secondary-text: #949494;
-  --muted-text: #e9e9e9;
-  --deep-link: #7a9cf0;
-  --purple-rule: #7c5cbf;
-  --console-mint: #309875;
+  /* NetrAI premium dark tokens */
+  --canvas: #000000;
+  --canvas-elevated: #09090b;
+  --mint: #0ea5e9;
+  --mint-fg: #38bdf8;
+  --ultraviolet: #8b5cf6;
+  --surface-slate: #0a0a0a;
+  --surface-container: #171717;
+  --surface-low: #111111;
+  --surface-lowest: #050505;
+  --surface-high: #262626;
+  --surface-bright: #404040;
+  --image-frame: rgba(255,255,255,0.06);
+  --secondary-text: #888888;
+  --muted-text: #ededed;
+  --deep-link: #38bdf8;
+  --purple-rule: #a78bfa;
+  --console-mint: #0ea5e9;
 }
 
 @theme inline {

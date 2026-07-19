@@ -38,16 +38,16 @@ interface Report {
 }
 
 const COLORS = {
-  pothole: "#3CFFD0",
-  trash: "#f59e0b",
+  pothole: "#0ea5e9", // Electric Blue
+  trash: "#8b5cf6",   // Neon Purple
   critical: "#ef4444",
-  high: "#f59e0b",
+  high: "#f97316",
   medium: "#eab308",
-  low: "#3b82f6",
-  pending: "#ef4444",
-  process: "#f59e0b",
-  completed: "#22c55e",
-  rejected: "#6b7280",
+  low: "#10b981",
+  pending: "#64748b",
+  process: "#eab308",
+  completed: "#10b981",
+  rejected: "#3f3f46",
 };
 
 function toDisplayStatus(s: BackendStatus): "pending" | "process" | "completed" | "rejected" {
@@ -197,10 +197,10 @@ export default function DashboardPage() {
           </div>
           <button
             onClick={loadData}
-            className="border border-image-frame text-secondary-text text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-2.5 rounded-[24px] hover:border-mint hover:text-mint-fg transition-colors flex items-center gap-2"
+            className="border border-white/10 bg-white/5 hover:bg-white/10 text-secondary-text text-[11px] font-bold uppercase tracking-[0.15em] px-5 py-2.5 rounded-full backdrop-blur-md hover:text-white hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all flex items-center gap-2"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-            Refresh
+            Refresh Data
           </button>
         </div>
 
@@ -333,10 +333,13 @@ export default function DashboardPage() {
 }
 
 const tooltipStyle = {
-  background: "#0a0a0a",
+  background: "rgba(10, 10, 10, 0.7)",
+  backdropFilter: "blur(12px)",
   border: "1px solid rgba(255,255,255,0.1)",
-  borderRadius: 10,
+  borderRadius: 12,
   fontSize: 12,
+  color: "#ededed",
+  boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
 };
 
 function Kpi({
@@ -353,13 +356,14 @@ function Kpi({
   accent: string;
 }) {
   return (
-    <div className="bg-surface-slate border border-image-frame rounded-[16px] p-4">
-      <div className="flex items-center gap-2 text-[10px] text-secondary-text uppercase tracking-[1.1px] mb-2">
+    <div className="bg-surface-slate/40 backdrop-blur-md border border-white/5 hover:border-white/10 hover:bg-surface-slate/60 transition-all rounded-[16px] p-5 relative overflow-hidden group">
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="flex items-center gap-2 text-[10px] text-secondary-text uppercase tracking-[1.5px] mb-3 relative z-10">
         <span className={accent}>{icon}</span>
         {label}
       </div>
-      <div className={`text-[24px] font-bold font-mono ${accent}`}>{value}</div>
-      {sub && <div className="text-[10px] text-secondary-text/60 mt-0.5">{sub}</div>}
+      <div className={`text-[28px] font-bold font-mono tracking-tight relative z-10 ${accent}`}>{value}</div>
+      {sub && <div className="text-[11px] text-secondary-text/80 mt-1 relative z-10 font-medium">{sub}</div>}
     </div>
   );
 }
@@ -374,11 +378,14 @@ function ChartCard({
   className?: string;
 }) {
   return (
-    <div className={`bg-surface-slate border border-image-frame rounded-[20px] p-5 ${className}`}>
-      <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text mb-4">
+    <div className={`bg-surface-slate/40 backdrop-blur-md border border-white/5 hover:border-white/10 transition-colors rounded-[24px] p-6 relative ${className}`}>
+      <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text mb-6 flex items-center gap-2">
+        <div className="w-1.5 h-1.5 rounded-full bg-mint shadow-[0_0_8px_rgba(14,165,233,0.8)]" />
         {title}
       </div>
-      {children}
+      <div className="relative z-10">
+        {children}
+      </div>
     </div>
   );
 }

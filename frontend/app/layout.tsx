@@ -21,10 +21,10 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "CivikEye — Civic Issue Tracker",
-  description: "AI-powered road damage and waste detection platform for civic infrastructure monitoring.",
+  title: "NetrAI — AI Infrastructure Intelligence Platform",
+  description: "AI-powered road damage and waste detection platform for smart civic infrastructure monitoring.",
   openGraph: {
-    title: "CivikEye",
+    title: "NetrAI",
     description: "AI-powered road damage and waste detection.",
     type: "website",
   },

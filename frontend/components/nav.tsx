@@ -25,13 +25,13 @@ export default function Nav() {
 
   return (
     <>
-      <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-[72px] bg-canvas border-b border-border">
+      <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-[72px] bg-canvas/60 backdrop-blur-md border-b border-white/5">
         <div className="flex items-center gap-8">
           <Link
             href="/"
-            className="font-display text-3xl font-black italic tracking-tighter text-mint-fg"
+            className="font-display text-3xl font-black italic tracking-tighter bg-gradient-to-br from-[#0ea5e9] to-[#8b5cf6] bg-clip-text text-transparent drop-shadow-sm"
           >
-            CivikEye
+            NetrAI
           </Link>
           <div className="hidden md:flex items-center gap-6">
             {LINKS.map((link) => {
@@ -42,7 +42,7 @@ export default function Nav() {
                   href={link.href}
                   className={`font-sans text-[11px] font-bold uppercase tracking-[0.15em] transition-colors pb-1 ${
                     active
-                      ? "text-mint-fg border-b border-mint"
+                      ? "text-primary border-b border-primary shadow-[0_1px_10px_rgba(14,165,233,0.3)]"
                       : "text-foreground/50 hover:text-foreground"
                   }`}
                 >
@@ -63,7 +63,7 @@ export default function Nav() {
           </button>
           <Link
             href="/scan"
-            className="bg-mint text-black font-sans text-[11px] font-bold uppercase tracking-[0.15em] px-5 py-2 rounded-[24px] hover:bg-foreground hover:text-canvas transition-colors"
+            className="bg-foreground text-canvas font-sans text-[11px] font-bold uppercase tracking-[0.15em] px-5 py-2 rounded-[24px] hover:bg-primary hover:text-white transition-all hover:shadow-[0_0_15px_rgba(14,165,233,0.4)]"
           >
             New Inspection
           </Link>
