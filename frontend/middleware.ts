@@ -13,11 +13,27 @@ const isPublicRoute = createRouteMatcher([
   "/api/admin/me",
 ]);
 
-export default clerkMiddleware(async (auth, req) => {
+const clerk = clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
     await auth.protect();
   }
 });
+
+import { NextResponse } from 'next/server';
+export default async function middleware(req: any, event: any) {
+  try {
+    return await clerk(req, event);
+  } catch (err: any) {
+    return new NextResponse(
+      JSON.stringify({ 
+        error: "Middleware crashed", 
+        message: err.message || err.toString(),
+        stack: err.stack
+      }),
+      { status: 500, headers: { 'content-type': 'application/json' } }
+    );
+  }
+}
 
 export const config = {
   matcher: [
