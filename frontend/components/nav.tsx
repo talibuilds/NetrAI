@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { LogIn, Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -29,9 +30,16 @@ export default function Nav() {
         <div className="flex items-center gap-8">
           <Link
             href="/"
-            className="font-display text-3xl font-black italic tracking-tighter bg-gradient-to-br from-[#0ea5e9] to-[#8b5cf6] bg-clip-text text-transparent drop-shadow-sm"
+            className="flex items-center -ml-2"
           >
-            NetrAI
+            <Image 
+              src="/netrai_logo.svg" 
+              alt="NetrAI" 
+              width={160} 
+              height={50} 
+              className="h-[50px] w-auto object-contain drop-shadow-lg" 
+              priority
+            />
           </Link>
           <div className="hidden md:flex items-center gap-6">
             {LINKS.map((link) => {

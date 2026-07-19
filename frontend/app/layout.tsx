@@ -23,6 +23,10 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "NetrAI — AI Infrastructure Intelligence Platform",
   description: "AI-powered road damage and waste detection platform for smart civic infrastructure monitoring.",
+  icons: {
+    icon: "/netrai_icon.svg",
+    apple: "/netrai_icon.png",
+  },
   openGraph: {
     title: "NetrAI",
     description: "AI-powered road damage and waste detection.",
