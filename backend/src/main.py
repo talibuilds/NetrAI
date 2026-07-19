@@ -58,11 +58,18 @@ def _admin_emails() -> list[str]:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    _state["waste"] = load_waste()
-    _state["road"] = load_road()
-    init_storage()
     _state["mongo"] = init_mongo()
-    load_predict_model()
+    init_storage()
+
+    # Load models in a background thread so we don't block Uvicorn from binding the port!
+    # If this blocks, Render health checks timeout and kill the container.
+    def load_all_models():
+        _state["waste"] = load_waste()
+        _state["road"] = load_road()
+        load_predict_model()
+    
+    asyncio.create_task(asyncio.to_thread(load_all_models))
+
     yield
 
 
