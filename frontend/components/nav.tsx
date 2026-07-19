@@ -30,16 +30,19 @@ export default function Nav() {
         <div className="flex items-center gap-8">
           <Link
             href="/"
-            className="flex items-center -ml-2"
+            className="flex items-center gap-2"
           >
             <Image 
-              src="/netrai_logo.svg" 
-              alt="NetrAI" 
-              width={160} 
-              height={50} 
-              className="h-[50px] w-auto object-contain drop-shadow-lg" 
+              src="/netrai_icon.svg" 
+              alt="NetrAI Icon" 
+              width={32} 
+              height={32} 
+              className="h-[32px] w-auto object-contain drop-shadow-md" 
               priority
             />
+            <span className="font-display text-2xl font-black italic tracking-tighter bg-gradient-to-br from-[#0ea5e9] to-[#8b5cf6] bg-clip-text text-transparent drop-shadow-sm mt-1">
+              NetrAI
+            </span>
           </Link>
           <div className="hidden md:flex items-center gap-6">
             {LINKS.map((link) => {
