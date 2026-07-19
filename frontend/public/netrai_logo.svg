@@ -1,0 +1,55 @@
+<svg viewBox="0 0 600 780" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0" stop-color="#0B0A08"/>
+    <stop offset="1" stop-color="#1A1408"/>
+  </linearGradient>
+  <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0" stop-color="#F6D875"/>
+    <stop offset="0.5" stop-color="#D4AF37"/>
+    <stop offset="1" stop-color="#8F6E1E"/>
+  </linearGradient>
+  <radialGradient id="irisGrad" cx="35%" cy="32%" r="75%">
+    <stop offset="0" stop-color="#FBE7A1"/>
+    <stop offset="1" stop-color="#B4881F"/>
+  </radialGradient>
+  <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+    <stop offset="0" stop-color="#D4AF37" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#D4AF37" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+
+<rect width="600" height="780" rx="56" fill="url(#bgGrad)"/>
+
+<g transform="translate(44,40)">
+  <circle cx="256" cy="256" r="205" fill="url(#glow)"/>
+
+  <!-- detection frame corners -->
+  <g stroke="url(#goldGrad)" stroke-width="12" stroke-linecap="round" fill="none">
+    <path d="M70,122 L70,72 L120,72"/>
+    <path d="M392,72 L442,72 L442,122"/>
+    <path d="M442,390 L442,440 L392,440"/>
+    <path d="M120,440 L70,440 L70,390"/>
+  </g>
+
+  <!-- eye -->
+  <path d="M114,256 Q256,164 398,256 Q256,348 114,256 Z" fill="#0B0A08" stroke="url(#goldGrad)" stroke-width="10"/>
+
+  <!-- scan ring -->
+  <circle cx="256" cy="256" r="60" fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-dasharray="9 8"/>
+
+  <!-- iris / precision marker -->
+  <circle cx="256" cy="256" r="43" fill="url(#irisGrad)"/>
+  <circle cx="256" cy="256" r="17" fill="#0B0A08"/>
+  <circle cx="256" cy="256" r="6" fill="#FBE7A1"/>
+</g>
+
+<!-- wordmark -->
+<text x="300" y="655" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-weight="bold" font-size="72" letter-spacing="7" text-anchor="middle">
+  <tspan fill="url(#goldGrad)">NETR</tspan><tspan fill="#FBE7A1">AI</tspan>
+</text>
+
+<line x1="255" y1="682" x2="345" y2="682" stroke="url(#goldGrad)" stroke-width="2"/>
+
+<text x="300" y="712" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="17" letter-spacing="6" fill="#9C8546" text-anchor="middle">INFRASTRUCTURE INTELLIGENCE</text>
+</svg>
