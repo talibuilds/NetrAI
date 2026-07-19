@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi, afterEach } from "vitest";
 
 // Silence next-auth internals that try to read process.env.AUTH_* at import time
 process.env.AUTH_SECRET = "test-secret-for-vitest-only";
