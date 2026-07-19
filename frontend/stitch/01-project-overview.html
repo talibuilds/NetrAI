@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dammage - Project Overview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;700;900&amp;family=Newsreader:wght@400;500;600&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-container": "#5200ff",
+                      "on-tertiary-container": "#756300",
+                      "error-container": "#93000a",
+                      "tertiary-fixed": "#fee267",
+                      "primary-fixed-dim": "#00e0b4",
+                      "tertiary": "#ffffff",
+                      "outline-variant": "#3b4a44",
+                      "on-secondary-fixed-variant": "#4400d9",
+                      "surface-container-highest": "#2e3733",
+                      "deep-link-blue": "#3860BE",
+                      "surface-slate": "#2D2D2D",
+                      "canvas-black": "#131313",
+                      "focus-cyan": "#1EAEDB",
+                      "primary": "#ffffff",
+                      "absolute-black": "#000000",
+                      "primary-fixed": "#3afecf",
+                      "on-surface-variant": "#b9cac2",
+                      "on-tertiary-fixed": "#221b00",
+                      "surface-tint": "#00e0b4",
+                      "primary-container": "#3afecf",
+                      "tertiary-fixed-dim": "#e0c64e",
+                      "on-surface": "#dbe5df",
+                      "inverse-primary": "#006b55",
+                      "on-tertiary": "#3a3000",
+                      "on-primary-fixed-variant": "#00513f",
+                      "hazard-white": "#FFFFFF",
+                      "on-secondary-fixed": "#1a0063",
+                      "secondary-text": "#949494",
+                      "on-secondary": "#2f009c",
+                      "surface-container": "#19211e",
+                      "surface-container-lowest": "#08100d",
+                      "purple-rule": "#3D00BF",
+                      "on-tertiary-fixed-variant": "#534600",
+                      "image-frame": "#313131",
+                      "background": "#0d1512",
+                      "muted-text": "#E9E9E9",
+                      "error": "#ffb4ab",
+                      "on-primary-container": "#00725b",
+                      "on-primary-fixed": "#002118",
+                      "secondary-fixed": "#e5deff",
+                      "tertiary-container": "#fee267",
+                      "inverse-on-surface": "#2a322f",
+                      "on-primary": "#00382b",
+                      "surface-container-high": "#232c28",
+                      "on-error-container": "#ffdad6",
+                      "secondary": "#c9bfff",
+                      "inverse-surface": "#dbe5df",
+                      "on-background": "#dbe5df",
+                      "surface-variant": "#2e3733",
+                      "surface-bright": "#323b37",
+                      "on-secondary-container": "#ccc2ff",
+                      "on-error": "#690005",
+                      "console-mint-border": "#309875",
+                      "surface-dim": "#0d1512",
+                      "surface-container-low": "#151d1a",
+                      "outline": "#84948d",
+                      "surface": "#0d1512",
+                      "secondary-fixed-dim": "#c9bfff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "card-inner": "24px",
+                      "base": "8px",
+                      "gutter": "24px",
+                      "section-v": "64px",
+                      "timeline-gap": "12px",
+                      "feature-inner": "40px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "spaceGrotesk"
+                      ],
+                      "body-relaxed": [
+                              "spaceGrotesk"
+                      ],
+                      "mono-timestamp": [
+                              "spaceGrotesk"
+                      ],
+                      "hero-display": [
+                              "epilogue"
+                      ],
+                      "mono-label": [
+                              "spaceGrotesk"
+                      ],
+                      "whisper-kicker": [
+                              "spaceGrotesk"
+                      ],
+                      "display-md": [
+                              "epilogue"
+                      ],
+                      "serif-body": [
+                              "newsreader"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "34px",
+                              {
+                                      "lineHeight": "1.00",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-relaxed": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.60",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "mono-timestamp": [
+                              "11px",
+                              {
+                                      "lineHeight": "1.20",
+                                      "letterSpacing": "1.1px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "hero-display": [
+                              "107px",
+                              {
+                                      "lineHeight": "0.95",
+                                      "letterSpacing": "1.07px",
+                                      "fontWeight": "900"
+                              }
+                      ],
+                      "mono-label": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.20",
+                                      "letterSpacing": "1.5px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "whisper-kicker": [
+                              "19px",
+                              {
+                                      "lineHeight": "1.20",
+                                      "letterSpacing": "1.9px",
+                                      "fontWeight": "300"
+                              }
+                      ],
+                      "display-md": [
+                              "60px",
+                              {
+                                      "lineHeight": "0.95",
+                                      "fontWeight": "900"
+                              }
+                      ],
+                      "serif-body": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.30",
+                                      "letterSpacing": "-0.16px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-canvas-black text-on-surface font-body-relaxed text-body-relaxed m-0 p-0 overflow-x-hidden">
+<!-- TopAppBar -->
+<nav class="hidden md:flex fixed top-0 w-full z-50 flex justify-between items-center px-6 h-20 bg-[#131313] border-b border-white/10 transition-all duration-200 ease-in-out">
+<div class="flex items-center gap-8">
+<span class="text-4xl font-black italic tracking-tighter text-[#3CFFD0]">DAMMAGE</span>
+<div class="flex items-center gap-6">
+<a class="font-['Epilogue'] uppercase tracking-widest font-bold text-xs text-[#3CFFD0] border-b-2 border-[#3CFFD0] pb-1 hover:bg-white/5" href="#">Dashboard</a>
+<a class="font-['Epilogue'] uppercase tracking-widest font-bold text-xs text-white/60 hover:text-white transition-colors hover:bg-white/5" href="#">Roads</a>
+<a class="font-['Epilogue'] uppercase tracking-widest font-bold text-xs text-white/60 hover:text-white transition-colors hover:bg-white/5" href="#">Waste</a>
+<a class="font-['Epilogue'] uppercase tracking-widest font-bold text-xs text-white/60 hover:text-white transition-colors hover:bg-white/5" href="#">History</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-[#3CFFD0] text-black font-mono-label text-mono-label uppercase tracking-widest px-6 py-2 rounded-[24px] hover:bg-white hover:border-[#3CFFD0] hover:border">New Inspection</button>
+<button class="text-white/60 hover:text-white hover:bg-white/5 p-2 rounded-full"><span class="material-symbols-outlined">notifications</span></button>
+<button class="text-white/60 hover:text-white hover:bg-white/5 p-2 rounded-full"><span class="material-symbols-outlined">settings</span></button>
+</div>
+</nav>
+<!-- SideNavBar (Mobile/Tablet) -->
+<aside class="md:hidden fixed left-0 top-20 h-[calc(100vh-5rem)] flex flex-col py-8 bg-[#131313] w-72 border-r border-white/10 z-40 transition-transform">
+<div class="px-6 mb-8">
+<div class="font-black text-[#3CFFD0] text-xl">STORYSTREAM</div>
+<div class="font-['Epilogue'] text-sm font-medium text-white/60">Live Detection Feed</div>
+</div>
+<nav class="flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-4 bg-[#3CFFD0] text-black rounded-full mx-2 px-4 py-3 font-['Epilogue'] text-sm font-medium scale-95 active:scale-100 transition-transform" href="#">
+<span class="material-symbols-outlined">analytics</span>
+                Activity
+            </a>
+<a class="flex items-center gap-4 text-white/70 hover:text-[#3CFFD0] hover:bg-white/5 rounded-full mx-2 px-4 py-3 font-['Epilogue'] text-sm font-medium scale-95 active:scale-100 transition-transform" href="#">
+<span class="material-symbols-outlined">biotech</span>
+                Models
+            </a>
+<a class="flex items-center gap-4 text-white/70 hover:text-[#3CFFD0] hover:bg-white/5 rounded-full mx-2 px-4 py-3 font-['Epilogue'] text-sm font-medium scale-95 active:scale-100 transition-transform" href="#">
+<span class="material-symbols-outlined">group</span>
+                Team
+            </a>
+<a class="flex items-center gap-4 text-white/70 hover:text-[#3CFFD0] hover:bg-white/5 rounded-full mx-2 px-4 py-3 font-['Epilogue'] text-sm font-medium scale-95 active:scale-100 transition-transform" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                Archive
+            </a>
+</nav>
+<div class="px-6 mt-auto">
+<button class="w-full bg-[#2D2D2D] text-white font-mono-label text-mono-label uppercase tracking-widest px-6 py-3 rounded-[24px]">Upgrade Node</button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="pt-20 md:ml-0 md:pl-0 min-h-screen">
+<div class="max-w-[1300px] mx-auto px-6 py-12 md:py-24">
+<!-- Hero Header -->
+<header class="mb-section-v">
+<h1 class="font-hero-display text-hero-display text-hazard-white uppercase break-words leading-none mb-4 tracking-tighter">DAMMAGE</h1>
+<p class="font-whisper-kicker text-whisper-kicker text-muted-text uppercase">Project Overview &amp; Live Telemetry</p>
+</header>
+<!-- Bento Stats Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-section-v">
+<!-- Primary Stat -->
+<div class="bg-primary-fixed text-absolute-black rounded-DEFAULT p-feature-inner col-span-1 md:col-span-2 flex flex-col justify-between min-h-[300px]">
+<div>
+<div class="font-mono-label text-mono-label uppercase mb-4 opacity-80 border-b border-black/20 pb-2 inline-block">Total Potholes Detected</div>
+<div class="font-display-md text-display-md">14,209</div>
+</div>
+<div class="flex items-end justify-between">
+<div class="font-body-relaxed text-body-relaxed opacity-90 max-w-sm">
+                            Significant structural anomalies recorded across major arterials in the last 72 hours. Immediate remediation recommended for Sector 7.
+                        </div>
+<span class="material-symbols-outlined text-4xl" data-weight="fill">warning</span>
+</div>
+</div>
+<!-- Secondary Stat -->
+<div class="bg-surface-slate rounded-DEFAULT p-card-inner border border-image-frame flex flex-col justify-between min-h-[300px]">
+<div>
+<div class="font-mono-label text-mono-label uppercase text-primary-fixed mb-4">Waste Volume (Tons)</div>
+<div class="font-headline-lg text-headline-lg text-hazard-white">842.5</div>
+</div>
+<div class="mt-8 border-t border-image-frame pt-4">
+<div class="flex justify-between items-center mb-2">
+<span class="font-mono-timestamp text-mono-timestamp text-muted-text uppercase">Zone Alpha</span>
+<span class="font-mono-timestamp text-mono-timestamp text-primary-fixed">45%</span>
+</div>
+<div class="w-full bg-canvas-black h-1 rounded-full">
+<div class="bg-primary-fixed h-1 rounded-full w-[45%]"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- StoryStream Rail -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- The Rail Spine (Desktop) -->
+<div class="hidden md:block md:col-span-3 border-r border-image-frame pr-8 relative">
+<div class="sticky top-32">
+<h2 class="font-headline-lg text-headline-lg text-hazard-white mb-8">LIVE FEED</h2>
+<div class="font-mono-label text-mono-label uppercase text-primary-fixed tracking-widest mb-4">System Status: Active</div>
+<p class="font-serif-body text-serif-body text-muted-text">Continuous ingestion of telemetry data from mobile edge units. Confidence threshold &gt; 94%.</p>
+</div>
+</div>
+<!-- The Tiles -->
+<div class="md:col-span-9 relative">
+<!-- Vertical Line connecting items -->
+<div class="absolute left-[39px] md:left-[59px] top-0 bottom-0 w-[1px] bg-image-frame border-dashed border-l z-0"></div>
+<div class="flex flex-col gap-timeline-gap relative z-10">
+<!-- Tile 1: High Priority -->
+<div class="flex gap-4 md:gap-8 items-start group">
+<div class="w-20 md:w-28 flex-shrink-0 text-right pt-4 bg-canvas-black z-10 pr-4">
+<div class="font-mono-timestamp text-mono-timestamp text-primary-fixed uppercase">14:02:55</div>
+<div class="font-mono-timestamp text-mono-timestamp text-muted-text opacity-50">OCT 24</div>
+</div>
+<div class="bg-surface-container rounded-[20px] p-card-inner border border-primary-fixed w-full transition-colors hover:bg-surface-bright">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed text-sm">emergency</span>
+<span class="font-mono-label text-mono-label text-primary-fixed uppercase">Critical Severity</span>
+</div>
+<span class="font-mono-timestamp text-mono-timestamp text-muted-text border border-image-frame px-2 py-1 rounded-sm">ID: RD-8892</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-hazard-white mb-2 group-hover:text-deep-link-blue transition-colors">Massive Sub-base Failure Detected</h3>
+<p class="font-body-relaxed text-body-relaxed text-muted-text mb-6">Automated scan reveals a 4.2m longitudinal crack indicating deep structural compromise. Ground penetrating radar flags potential sinkhole formation.</p>
+<div class="flex gap-4">
+<button class="font-mono-label text-mono-label uppercase text-hazard-white border border-image-frame px-4 py-2 rounded-[40px] hover:border-primary-fixed transition-colors">View Scan</button>
+<button class="font-mono-label text-mono-label uppercase text-black bg-primary-fixed px-4 py-2 rounded-[24px] hover:bg-hazard-white transition-colors">Dispatch Crew</button>
+</div>
+</div>
+</div>
+<!-- Tile 2: Standard -->
+<div class="flex gap-4 md:gap-8 items-start group">
+<div class="w-20 md:w-28 flex-shrink-0 text-right pt-4 bg-canvas-black z-10 pr-4">
+<div class="font-mono-timestamp text-mono-timestamp text-muted-text uppercase">13:45:12</div>
+</div>
+<div class="bg-surface-slate rounded-[20px] p-card-inner border border-image-frame w-full transition-colors hover:bg-surface-bright">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-muted-text text-sm">delete</span>
+<span class="font-mono-label text-mono-label text-muted-text uppercase">Waste Accumulation</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<h3 class="font-headline-lg text-headline-lg text-hazard-white mb-2 text-xl group-hover:text-deep-link-blue transition-colors">Illegal Dumping Zone F</h3>
+<p class="font-body-relaxed text-body-relaxed text-muted-text text-sm">Estimated 450kg of construction debris identified on secondary service road. Obstructing partial lane.</p>
+</div>
+<div class="h-32 bg-image-frame rounded-[12px] border border-image-frame overflow-hidden relative">
+<img alt="Construction debris on road" class="w-full h-full object-cover opacity-60 mix-blend-luminosity" data-alt="pile of concrete rubble and construction waste dumped on the side of a paved road with industrial background, muted gritty tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArVH7OQkmlsQy7WKLqqpgX-mYwS-zaJ5N5vRj1T4-4n9XEvWGDlt_UUlxKjSxdfb_4x5DqvXOdDfCEt94yP0G4vZeHjZs4mTuK2cFc-UwwJCuZ8VqUr6cc2sWiEhrz28hD-ATjpgYrxTA3x44ktjki6_3jY3LFlmVxRmVOAZ0N_WBN8pVhkZl5xNQSO18ho2CsJuHDQo73F1c4B877Ws-yWCTPnFK3t8D7jPZY5yH8AFmatfYm4lJW1jjx-PJu-82sXo1qtzSQvL4"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Tile 3: Standard -->
+<div class="flex gap-4 md:gap-8 items-start group">
+<div class="w-20 md:w-28 flex-shrink-0 text-right pt-4 bg-canvas-black z-10 pr-4">
+<div class="font-mono-timestamp text-mono-timestamp text-muted-text uppercase">12:10:04</div>
+</div>
+<div class="bg-surface-slate rounded-[20px] p-card-inner border border-image-frame w-full transition-colors hover:bg-surface-bright">
+<h3 class="font-headline-lg text-headline-lg text-hazard-white mb-2 text-xl group-hover:text-deep-link-blue transition-colors">Minor Surface Degradation</h3>
+<p class="font-body-relaxed text-body-relaxed text-muted-text text-sm mb-4">Cluster of shallow potholes (depth &lt; 4cm) mapping to heavy transit route. Marked for scheduled maintenance queue.</p>
+<div class="flex gap-2">
+<span class="bg-canvas-black border border-image-frame text-muted-text font-mono-timestamp text-mono-timestamp px-2 py-1 rounded-sm uppercase">Priority: Low</span>
+<span class="bg-canvas-black border border-image-frame text-muted-text font-mono-timestamp text-mono-timestamp px-2 py-1 rounded-sm uppercase">Route 104</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

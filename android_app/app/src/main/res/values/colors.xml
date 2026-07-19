@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="civikeye_bg">#FF0A0A0B</color>
+    <color name="civikeye_accent">#FF3DECAB</color>
+</resources>

@@ -1,0 +1,151 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ── Light theme ─────────────────────────────────────────── */
+:root {
+  --radius: 0.625rem;
+
+  /* shadcn semantic vars */
+  --background: #eee8df;
+  --foreground: #1c1714;
+  --card: #e5ddd4;
+  --card-foreground: #1c1714;
+  --popover: #e5ddd4;
+  --popover-foreground: #1c1714;
+  --primary: #1c1714;
+  --primary-foreground: #eee8df;
+  --secondary: #dcd5cb;
+  --secondary-foreground: #1c1714;
+  --muted: #dcd5cb;
+  --muted-foreground: #6b5f54;
+  --accent: #dcd5cb;
+  --accent-foreground: #1c1714;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.12);
+  --input: rgba(0, 0, 0, 0.1);
+  --ring: rgba(0, 0, 0, 0.3);
+
+  /* Verge design tokens — light */
+  --canvas: #eee8df;
+  --canvas-elevated: #f5f0e8;
+  --mint: #3cffd0;
+  --mint-fg: #006b5a;   /* dark teal — 5.5:1 contrast on warm canvas */
+  --ultraviolet: #5200ff;
+  --surface-slate: #e5ddd4;
+  --surface-container: #daeae4;
+  --surface-low: #e8f0ec;
+  --surface-lowest: #eff5f2;
+  --surface-high: #d8d0c7;
+  --surface-bright: #cec6bc;
+  --image-frame: #c8bfb5;
+  --secondary-text: #6b5f54;
+  --muted-text: #1c1714;
+  --deep-link: #3860be;
+  --purple-rule: #7340e0;
+  --console-mint: #1a6b52;
+}
+
+/* ── Dark theme ───────────────────────────────────────────── */
+.dark {
+  /* shadcn semantic vars */
+  --background: #131313;
+  --foreground: #e9e9e9;
+  --card: #1f1f1f;
+  --card-foreground: #e9e9e9;
+  --popover: #1f1f1f;
+  --popover-foreground: #e9e9e9;
+  --primary: #e9e9e9;
+  --primary-foreground: #131313;
+  --secondary: #2d2d2d;
+  --secondary-foreground: #e9e9e9;
+  --muted: #2d2d2d;
+  --muted-foreground: #949494;
+  --accent: #2d2d2d;
+  --accent-foreground: #e9e9e9;
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: #e9e9e9;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: rgba(255, 255, 255, 0.3);
+
+  /* Verge design tokens — dark */
+  --canvas: #131313;
+  --canvas-elevated: #1a1a1a;
+  --mint: #3cffd0;
+  --mint-fg: #3cffd0;   /* same as mint — excellent contrast on dark canvas */
+  --ultraviolet: #9b87f5;
+  --surface-slate: #2d2d2d;
+  --surface-container: #19211e;
+  --surface-low: #151d1a;
+  --surface-lowest: #08100d;
+  --surface-high: #232c28;
+  --surface-bright: #323b37;
+  --image-frame: #313131;
+  --secondary-text: #949494;
+  --muted-text: #e9e9e9;
+  --deep-link: #7a9cf0;
+  --purple-rule: #7c5cbf;
+  --console-mint: #309875;
+}
+
+@theme inline {
+  /* shadcn */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Verge / CivikEye tokens */
+  --color-canvas: var(--canvas);
+  --color-canvas-elevated: var(--canvas-elevated);
+  --color-mint: var(--mint);
+  --color-mint-fg: var(--mint-fg);
+  --color-ultraviolet: var(--ultraviolet);
+  --color-surface-slate: var(--surface-slate);
+  --color-surface-container: var(--surface-container);
+  --color-surface-low: var(--surface-low);
+  --color-surface-lowest: var(--surface-lowest);
+  --color-surface-high: var(--surface-high);
+  --color-surface-bright: var(--surface-bright);
+  --color-image-frame: var(--image-frame);
+  --color-secondary-text: var(--secondary-text);
+  --color-muted-text: var(--muted-text);
+  --color-deep-link: var(--deep-link);
+  --color-purple-rule: var(--purple-rule);
+  --color-console-mint: var(--console-mint);
+
+  /* Font families */
+  --font-display: var(--font-epilogue, system-ui);
+  --font-sans: var(--font-space-grotesk, system-ui);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-canvas text-foreground;
+  }
+}
