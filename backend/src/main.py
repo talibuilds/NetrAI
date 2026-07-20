@@ -485,7 +485,7 @@ def get_report(report_id: str):
         "prediction": prediction
     }
 
-@app.get("/prioritize")
+@app.get("/priority")
 def prioritize_assets(limit: int = 10):
     db = _state.get("mongo")
     if db is None:
@@ -494,6 +494,18 @@ def prioritize_assets(limit: int = 10):
     assets = list(db[ASSETS_COLL].find({}))
     results = []
     
+    # Weights for priority calculation
+    # W_DAMAGE: 1.0 (Base penalty for structural failure)
+    # W_TRAFFIC: 2.0 (High traffic increases priority significantly)
+    # W_EVENTS: 5.0 (Repeated damage events are a strong signal)
+    # W_POIS: 3.0 (Proximity to schools/hospitals)
+    # W_POP: 0.5 (General population density impact)
+    W_DAMAGE = 1.0
+    W_TRAFFIC = 2.0
+    W_EVENTS = 5.0
+    W_POIS = 3.0
+    W_POP = 0.5
+    
     for a in assets:
         current = a.get("health_score", 100.0)
         traffic = a.get("traffic_volume", 5000)
@@ -501,11 +513,22 @@ def prioritize_assets(limit: int = 10):
         road_age = a.get("road_age_days", 1000)
         damage_events = a.get("recent_damage_events", 1)
         
+        # Placeholders for new demographic data
+        nearby_pois = a.get("nearby_pois", 2) 
+        pop_density = a.get("population_density", 800)
+        
         prediction = predict_health_score(current, traffic, rainfall, road_age, damage_events)
         pred_t30 = prediction["future_health"]
         
         damage = 100 - pred_t30
-        priority_score = damage + (traffic / 1000) * 2 + damage_events * 5
+        
+        priority_score = (
+            (damage * W_DAMAGE) + 
+            ((traffic / 1000) * W_TRAFFIC) + 
+            (damage_events * W_EVENTS) +
+            (nearby_pois * W_POIS) +
+            ((pop_density / 1000) * W_POP)
+        )
         
         results.append({
             "asset_id": a["_id"],

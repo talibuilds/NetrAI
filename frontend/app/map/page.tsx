@@ -20,10 +20,12 @@ import { severityColor } from "@/lib/colors";
 const DetectionMap = dynamic(() => import("@/components/DetectionMap"), {
   ssr: false,
 });
+import { ReportDetailModal } from "@/components/ReportDetailModal";
 
 const API = process.env.NEXT_PUBLIC_ML_API ?? "http://127.0.0.1:8000";
 
 interface BackendReport {
+  id: string;
   image: string | null;
   coordinates: [number, number];
   time: string;
@@ -72,6 +74,7 @@ export default function MapPage() {
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [locBusy, setLocBusy] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
   const signatureRef = useRef<string>("");
 
   const loadData = useCallback(() => {
@@ -87,6 +90,7 @@ export default function MapPage() {
         const mapped: Pin[] = data
           .filter((d) => Array.isArray(d.coordinates) && d.coordinates.length === 2)
           .map((d) => ({
+            id: d.id,
             lat: d.coordinates[1],
             lng: d.coordinates[0],
             type: d.type,
@@ -165,7 +169,7 @@ export default function MapPage() {
       (pos) => {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setUserLoc(loc);
-        setFocusPin({ lat: loc.lat, lng: loc.lng, type: "trash", severity: 0, image: null, time: new Date().toISOString() });
+        setFocusPin({ id: "user", lat: loc.lat, lng: loc.lng, type: "trash", severity: 0, image: null, time: new Date().toISOString() });
         setLocBusy(false);
       },
       () => {
@@ -191,8 +195,8 @@ export default function MapPage() {
   const highCount = filteredPins.filter((p) => p.severity >= 60).length;
 
   return (
-    <main className={fullscreen ? "fixed inset-0 z-[100] bg-canvas" : "pt-[72px] min-h-screen bg-canvas"}>
-      <div className={fullscreen ? "h-full w-full flex flex-col" : "max-w-[1300px] mx-auto px-6 py-12"}>
+    <main className={fullscreen ? "fixed inset-0 z-[100] bg-canvas" : "min-h-screen bg-canvas"}>
+      <div className={fullscreen ? "h-full w-full flex flex-col" : "max-w-[1400px] mx-auto px-6 py-12"}>
         {!fullscreen && (
           <>
             <div className="flex items-baseline gap-3 mb-10">
@@ -358,6 +362,7 @@ export default function MapPage() {
               pins={filteredPins}
               focusPin={focusPin}
               userLocation={userLoc}
+              onPinClick={(pin) => setSelectedReportId(pin.id)}
             />
 
             {loading && pins.length === 0 && (
@@ -500,6 +505,13 @@ export default function MapPage() {
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1000] bg-foreground text-canvas text-[12px] font-bold uppercase tracking-[0.15em] px-5 py-3 rounded-[24px] shadow-lg">
             {toast}
           </div>
+        )}
+
+        {selectedReportId && (
+          <ReportDetailModal 
+            reportId={selectedReportId} 
+            onClose={() => setSelectedReportId(null)} 
+          />
         )}
       </div>
     </main>

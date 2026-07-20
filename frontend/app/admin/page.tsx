@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Download, Search, AlertCircle, Circle, ChevronDown, RefreshCw, ShieldCheck, Check } from "lucide-react";
+import { ReportDetailModal } from "@/components/ReportDetailModal";
 
 const API = process.env.NEXT_PUBLIC_ML_API ?? "http://127.0.0.1:8000";
 
@@ -26,13 +27,7 @@ interface AdminReport {
   resolved_at: string | null;
 }
 
-interface AssetPriority {
-  asset_id: string;
-  name: string;
-  current_health: number;
-  predicted_health_t30: number;
-  priority_score: number;
-}
+
 
 function toDisplay(s: BackendStatus): DisplayStatus {
   if (s === "resolved") return "completed";
@@ -123,8 +118,7 @@ export default function IssueTrackerPage() {
   const [sortBy, setSortBy] = useState<"severity" | "time" | "reports">("severity");
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"issues" | "assets">("issues");
-  const [assets, setAssets] = useState<AssetPriority[]>([]);
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
   const signatureRef = useRef("");
 
   useEffect(() => {
@@ -167,20 +161,7 @@ export default function IssueTrackerPage() {
     return () => clearInterval(id);
   }, [loadData]);
 
-  const loadAssets = useCallback(() => {
-    fetch(`${API}/prioritize?limit=100`)
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
-      .then((data) => setAssets(data))
-      .catch((err) => console.error("Failed to load assets", err));
-  }, []);
 
-  useEffect(() => {
-    if (viewMode === "assets") {
-      loadAssets();
-      const id = setInterval(loadAssets, 5000);
-      return () => clearInterval(id);
-    }
-  }, [viewMode, loadAssets]);
 
   const counts = useMemo(() => {
     const byDisplay: Record<DisplayStatus, number> = { pending: 0, process: 0, completed: 0 };
@@ -284,7 +265,7 @@ export default function IssueTrackerPage() {
   }
 
   return (
-    <main className="pt-[72px] min-h-screen bg-canvas">
+    <main className="min-h-screen bg-canvas">
       <div className="max-w-[1400px] mx-auto px-6 py-8">
         <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
           <div>
@@ -326,27 +307,7 @@ export default function IssueTrackerPage() {
           </div>
         )}
 
-        <div className="flex gap-4 mb-6 border-b border-image-frame pb-2">
-          <button
-            onClick={() => setViewMode("issues")}
-            className={`text-[13px] font-bold uppercase tracking-[1.5px] pb-2 ${
-              viewMode === "issues" ? "text-mint-fg border-b-2 border-mint-fg" : "text-secondary-text hover:text-foreground"
-            }`}
-          >
-            Incident Reports
-          </button>
-          <button
-            onClick={() => setViewMode("assets")}
-            className={`text-[13px] font-bold uppercase tracking-[1.5px] pb-2 ${
-              viewMode === "assets" ? "text-mint-fg border-b-2 border-mint-fg" : "text-secondary-text hover:text-foreground"
-            }`}
-          >
-            Infrastructure Assets (Predict & Prioritize)
-          </button>
-        </div>
 
-        {viewMode === "issues" ? (
-          <>
             {adminChecked && !isAdmin && (
           <div className="flex items-center gap-2 bg-[#3b82f6]/10 border border-[#3b82f6]/30 text-[#93c5fd] text-[12px] px-4 py-2.5 rounded-[12px] mb-4">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" />
@@ -424,7 +385,8 @@ export default function IssueTrackerPage() {
               return (
                 <li
                   key={r.id}
-                  className="grid grid-cols-[1.4fr_1.2fr_0.7fr_0.7fr_0.6fr_1.1fr_0.7fr] gap-2 px-5 py-3 border-b border-image-frame/50 last:border-0 items-center hover:bg-canvas/40 transition-colors"
+                  onClick={() => setSelectedReportId(r.id)}
+                  className="grid grid-cols-[1.4fr_1.2fr_0.7fr_0.7fr_0.6fr_1.1fr_0.7fr] gap-2 px-5 py-3 border-b border-image-frame/50 last:border-0 items-center hover:bg-canvas/40 transition-colors cursor-pointer group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {r.image ? (
@@ -498,47 +460,12 @@ export default function IssueTrackerPage() {
             })}
           </ul>
         </div>
-          </>
-        ) : (
-          <div className="bg-surface-slate border border-image-frame rounded-[16px] overflow-visible">
-            <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 px-5 py-3 border-b border-image-frame text-[10px] font-bold uppercase tracking-[1.5px] text-secondary-text bg-canvas/50">
-              <div>Asset Name</div>
-              <div>Current Health (0-100)</div>
-              <div>Predicted Health (30 days)</div>
-              <div>Priority Score</div>
-            </div>
-            <ul>
-              {assets.map((a, i) => (
-                <li
-                  key={a.asset_id}
-                  className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 px-5 py-4 border-b border-image-frame/50 last:border-0 items-center hover:bg-canvas/40 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-ultraviolet/20 flex items-center justify-center text-ultraviolet font-bold">
-                      #{i + 1}
-                    </div>
-                    <div>
-                      <div className="text-[14px] font-bold text-foreground">{a.name || a.asset_id}</div>
-                      <div className="text-[10px] text-secondary-text uppercase tracking-[1.1px]">ID: {a.asset_id}</div>
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-[16px] font-mono font-bold text-mint-fg">{a.current_health.toFixed(1)}</span>
-                  </div>
-                  <div>
-                    <span className="text-[16px] font-mono font-bold text-[#ef4444]">{a.predicted_health_t30.toFixed(1)}</span>
-                    <span className="text-[10px] text-secondary-text block">↓ -{(a.current_health - a.predicted_health_t30).toFixed(1)} expected</span>
-                  </div>
-                  <div>
-                    <span className="text-[16px] font-mono font-bold text-foreground">{a.priority_score.toFixed(1)}</span>
-                  </div>
-                </li>
-              ))}
-              {assets.length === 0 && (
-                <li className="p-12 text-center text-[13px] text-secondary-text">No prioritized assets loaded yet.</li>
-              )}
-            </ul>
-          </div>
+
+        {selectedReportId && (
+          <ReportDetailModal 
+            reportId={selectedReportId} 
+            onClose={() => setSelectedReportId(null)} 
+          />
         )}
       </div>
     </main>

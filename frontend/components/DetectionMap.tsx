@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { severityColor } from "@/lib/colors";
 
 export interface Pin {
+  id: string;
   lat: number;
   lng: number;
   type: "trash" | "pothole";
@@ -20,6 +21,7 @@ const timeFmt = new Intl.DateTimeFormat("en-US", {
 interface Props {
   pins: Pin[];
   onResolve?: (pin: Pin) => Promise<void> | void;
+  onPinClick?: (pin: Pin) => void;
   focusPin?: Pin | null;
   userLocation?: { lat: number; lng: number } | null;
 }
@@ -28,7 +30,7 @@ function pinKey(p: Pin): string {
   return `${p.lat},${p.lng},${p.type}`;
 }
 
-export default function DetectionMap({ pins, onResolve, focusPin, userLocation }: Props) {
+export default function DetectionMap({ pins, onResolve, onPinClick, focusPin, userLocation }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<unknown>(null);
   const layerRef = useRef<unknown>(null);
@@ -37,6 +39,8 @@ export default function DetectionMap({ pins, onResolve, focusPin, userLocation }
   const markersRef = useRef<Map<string, any>>(new Map());
   const onResolveRef = useRef(onResolve);
   onResolveRef.current = onResolve;
+  const onPinClickRef = useRef(onPinClick);
+  onPinClickRef.current = onPinClick;
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -86,6 +90,11 @@ export default function DetectionMap({ pins, onResolve, focusPin, userLocation }
           fillOpacity: 0.55,
         });
         marker.bindPopup(() => buildPopup(pin, onResolveRef));
+        marker.on('click', () => {
+          if (onPinClickRef.current) {
+            onPinClickRef.current(pin);
+          }
+        });
         marker.addTo(group);
         markersRef.current.set(pinKey(pin), marker);
       });

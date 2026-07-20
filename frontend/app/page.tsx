@@ -4,19 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Area,
   AreaChart,
-  Bar,
-  BarChart,
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
   CartesianGrid,
+  Legend
 } from "recharts";
-import { AlertCircle, RefreshCw, TrendingUp, ShieldCheck, Clock, Activity } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_ML_API ?? "http://127.0.0.1:8000";
 
@@ -38,16 +33,8 @@ interface Report {
 }
 
 const COLORS = {
-  pothole: "#0ea5e9", // Electric Blue
-  trash: "#8b5cf6",   // Neon Purple
-  critical: "#ef4444",
-  high: "#f97316",
-  medium: "#eab308",
-  low: "#10b981",
-  pending: "#64748b",
-  process: "#eab308",
-  completed: "#10b981",
-  rejected: "#3f3f46",
+  pothole: "#3b82f6", // Blue
+  trash: "#a855f7",   // Purple
 };
 
 function toDisplayStatus(s: BackendStatus): "pending" | "process" | "completed" | "rejected" {
@@ -142,249 +129,179 @@ export default function DashboardPage() {
     }));
   }, [reports]);
 
-  const typeData = useMemo(() => {
-    const pothole = reports.filter((r) => r.type === "pothole").length;
-    const trash = reports.filter((r) => r.type === "trash").length;
-    return [
-      { name: "Pothole", value: pothole, color: COLORS.pothole },
-      { name: "Trash", value: trash, color: COLORS.trash },
-    ];
-  }, [reports]);
-
-  const severityData = useMemo(() => {
-    const buckets: Record<"critical" | "high" | "medium" | "low", number> = {
-      critical: 0,
-      high: 0,
-      medium: 0,
-      low: 0,
-    };
-    for (const r of reports) buckets[severityBucket(r.severity_score)]++;
-    return [
-      { name: "Critical", value: buckets.critical, color: COLORS.critical },
-      { name: "High", value: buckets.high, color: COLORS.high },
-      { name: "Medium", value: buckets.medium, color: COLORS.medium },
-      { name: "Low", value: buckets.low, color: COLORS.low },
-    ];
-  }, [reports]);
-
-  const statusData = useMemo(() => {
-    const counts: Record<"pending" | "process" | "completed" | "rejected", number> = {
-      pending: 0,
-      process: 0,
-      completed: 0,
-      rejected: 0,
-    };
-    for (const r of reports) counts[toDisplayStatus(r.status)]++;
-    return [
-      { name: "Pending", value: counts.pending, color: COLORS.pending },
-      { name: "Process", value: counts.process, color: COLORS.process },
-      { name: "Completed", value: counts.completed, color: COLORS.completed },
-      { name: "Rejected", value: counts.rejected, color: COLORS.rejected },
-    ];
-  }, [reports]);
-
   return (
-    <main className="pt-[72px] min-h-screen bg-canvas">
-      <div className="max-w-[1400px] mx-auto px-6 py-8">
-        <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
+    <main className="min-h-screen bg-[#07070a] text-white p-6 md:p-8 relative overflow-hidden">
+      {/* Background glow effects matching the design */}
+      <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-[#3b82f6] rounded-full blur-[150px] opacity-[0.07] pointer-events-none" />
+      <div className="absolute top-[40%] right-[10%] w-[600px] h-[600px] bg-[#a855f7] rounded-full blur-[180px] opacity-[0.05] pointer-events-none" />
+
+      <div className="max-w-[1400px] mx-auto relative z-10">
+        
+        {/* Header */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="font-display text-[48px] md:text-[56px] font-black text-foreground uppercase leading-none tracking-tight mb-2">
+            <h1 className="text-[32px] md:text-[40px] font-bold text-white tracking-tight leading-tight">
               Dashboard
             </h1>
-            <div className="text-[12px] text-secondary-text tracking-[0.5px]">
-              {kpis.total.toLocaleString()} total issues · live sync every 10s
+            <div className="text-[14px] text-white/50">
+              Live overview of your infrastructure
             </div>
           </div>
-          <button
-            onClick={loadData}
-            className="border border-white/10 bg-white/5 hover:bg-white/10 text-secondary-text text-[11px] font-bold uppercase tracking-[0.15em] px-5 py-2.5 rounded-full backdrop-blur-md hover:text-white hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all flex items-center gap-2"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-            Refresh Data
-          </button>
+          <div className="flex items-center gap-3">
+            <button className="px-5 py-2.5 rounded-[12px] bg-white/5 border border-white/10 text-white/80 text-[13px] hover:bg-white/10 hover:text-white transition-colors">
+              New Inspection
+            </button>
+            <button 
+              onClick={loadData}
+              className="px-5 py-2.5 rounded-[12px] bg-white/5 border border-white/10 text-white/80 text-[13px] hover:bg-white/10 hover:text-white transition-colors flex items-center gap-2"
+            >
+              {loading && <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+              Refresh Data
+            </button>
+          </div>
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 bg-destructive/10 border border-destructive/30 text-destructive text-[12px] px-4 py-3 rounded-[12px] mb-4">
+          <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] px-4 py-3 rounded-[12px] mb-6">
             <AlertCircle className="h-4 w-4 shrink-0" />
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-          <Kpi
-            icon={<Activity className="h-4 w-4" />}
-            label="Total Issues"
+        {/* 5 KPI Cards Row */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+          <KpiCard
+            title="Total Issues"
             value={kpis.total.toString()}
-            accent="text-foreground"
+            sub="Live count"
+            valueColor="text-[#60a5fa]"
           />
-          <Kpi
-            icon={<AlertCircle className="h-4 w-4" />}
-            label="Pending"
+          <KpiCard
+            title={<><span className="text-[#f87171]">Pending</span></>}
             value={kpis.pending.toString()}
-            sub={`${kpis.inProgress} in process`}
-            accent="text-[#ef4444]"
+            sub="In progress"
+            valueColor="text-[#f87171]"
           />
-          <Kpi
-            icon={<ShieldCheck className="h-4 w-4" />}
-            label="Completed"
+          <KpiCard
+            title={<><span className="text-[#4ade80]">Completed</span></>}
             value={kpis.completed.toString()}
             sub={`${kpis.completionRate.toFixed(1)}% rate`}
-            accent="text-[#22c55e]"
+            valueColor="text-[#4ade80]"
           />
-          <Kpi
-            icon={<TrendingUp className="h-4 w-4" />}
-            label="Avg Severity"
+          <KpiCard
+            title={<><span className="text-[#fbbf24]">Avg</span> Severity</>}
             value={kpis.avgSev.toFixed(1)}
             sub={`${kpis.critical} critical`}
-            accent="text-[#f59e0b]"
+            valueColor="text-[#fbbf24]"
           />
-          <Kpi
-            icon={<Clock className="h-4 w-4" />}
-            label="Median Resolve"
-            value={kpis.medianHrs === null ? "—" : `${kpis.medianHrs.toFixed(1)}h`}
-            sub="since created"
-            accent="text-[#a855f7]"
+          <KpiCard
+            title="Median Resolve"
+            value={kpis.medianHrs === null ? "—" : `${kpis.medianHrs.toFixed(1)}`}
+            sub="Since created"
+            valueColor="text-white"
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <ChartCard title="Issues Reported (14 days)" className="lg:col-span-3">
-            <ResponsiveContainer width="100%" height={260}>
-              <AreaChart data={timelineData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+        {/* Main Chart */}
+        <div className="bg-[#111116]/80 backdrop-blur-xl border border-white/5 rounded-[20px] p-6 shadow-2xl">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-[14px] text-white/90">Issues Reported (14 Days)</h2>
+            <select className="bg-transparent text-[13px] text-white/70 border-none outline-none cursor-pointer hover:text-white">
+              <option>14 Days</option>
+              <option>30 Days</option>
+              <option>All Time</option>
+            </select>
+          </div>
+          
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={timelineData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="gPoth" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={COLORS.pothole} stopOpacity={0.6} />
-                    <stop offset="100%" stopColor={COLORS.pothole} stopOpacity={0} />
+                  <linearGradient id="colorPothole" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={COLORS.pothole} stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor={COLORS.pothole} stopOpacity={0}/>
                   </linearGradient>
-                  <linearGradient id="gTrash" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={COLORS.trash} stopOpacity={0.6} />
-                    <stop offset="100%" stopColor={COLORS.trash} stopOpacity={0} />
+                  <linearGradient id="colorTrash" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={COLORS.trash} stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor={COLORS.trash} stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="label" stroke="#6b7280" fontSize={10} />
-                <YAxis stroke="#6b7280" fontSize={10} allowDecimals={false} />
-                <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#e5e7eb" }} />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Area type="monotone" dataKey="pothole" stroke={COLORS.pothole} fill="url(#gPoth)" strokeWidth={2} name="Pothole" />
-                <Area type="monotone" dataKey="trash" stroke={COLORS.trash} fill="url(#gTrash)" strokeWidth={2} name="Trash" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                <XAxis 
+                  dataKey="label" 
+                  stroke="rgba(255,255,255,0.4)" 
+                  fontSize={11} 
+                  tickLine={false}
+                  axisLine={false}
+                  dy={10}
+                />
+                <YAxis 
+                  stroke="rgba(255,255,255,0.4)" 
+                  fontSize={11} 
+                  tickLine={false}
+                  axisLine={false}
+                  allowDecimals={false}
+                  dx={-10}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#18181b', 
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '12px',
+                    color: '#fff',
+                    fontSize: '12px',
+                    boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)'
+                  }} 
+                />
+                <Legend 
+                  verticalAlign="bottom" 
+                  height={36} 
+                  iconType="circle"
+                  wrapperStyle={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', paddingTop: '20px' }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="pothole" 
+                  name="Pothole"
+                  stroke={COLORS.pothole} 
+                  strokeWidth={2}
+                  fillOpacity={1} 
+                  fill="url(#colorPothole)" 
+                  activeDot={{ r: 6, strokeWidth: 0, fill: COLORS.pothole }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="trash" 
+                  name="Trash"
+                  stroke={COLORS.trash} 
+                  strokeWidth={2}
+                  fillOpacity={1} 
+                  fill="url(#colorTrash)" 
+                  activeDot={{ r: 6, strokeWidth: 0, fill: COLORS.trash }}
+                />
               </AreaChart>
             </ResponsiveContainer>
-          </ChartCard>
-
-          <ChartCard title="Type Split">
-            <ResponsiveContainer width="100%" height={240}>
-              <PieChart>
-                <Pie
-                  data={typeData}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={50}
-                  outerRadius={85}
-                  stroke="none"
-                  paddingAngle={2}
-                  label={(entry) => `${entry.name} ${entry.value}`}
-                >
-                  {typeData.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
-              </PieChart>
-            </ResponsiveContainer>
-          </ChartCard>
-
-          <ChartCard title="Severity Buckets">
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={severityData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="name" stroke="#6b7280" fontSize={10} />
-                <YAxis stroke="#6b7280" fontSize={10} allowDecimals={false} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                  {severityData.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
-
-          <ChartCard title="Status Distribution">
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={statusData} layout="vertical" margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis type="number" stroke="#6b7280" fontSize={10} allowDecimals={false} />
-                <YAxis dataKey="name" type="category" stroke="#6b7280" fontSize={10} width={80} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="value" radius={[0, 6, 6, 0]}>
-                  {statusData.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
+          </div>
         </div>
+
       </div>
     </main>
   );
 }
 
-const tooltipStyle = {
-  background: "rgba(10, 10, 10, 0.7)",
-  backdropFilter: "blur(12px)",
-  border: "1px solid rgba(255,255,255,0.1)",
-  borderRadius: 12,
-  fontSize: 12,
-  color: "#ededed",
-  boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
-};
-
-function Kpi({
-  icon,
-  label,
-  value,
-  sub,
-  accent,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  sub?: string;
-  accent: string;
-}) {
+function KpiCard({ title, value, sub, valueColor }: { title: React.ReactNode, value: string, sub: string, valueColor: string }) {
   return (
-    <div className="bg-surface-slate/40 backdrop-blur-md border border-white/5 hover:border-white/10 hover:bg-surface-slate/60 transition-all rounded-[16px] p-5 relative overflow-hidden group">
-      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-      <div className="flex items-center gap-2 text-[10px] text-secondary-text uppercase tracking-[1.5px] mb-3 relative z-10">
-        <span className={accent}>{icon}</span>
-        {label}
-      </div>
-      <div className={`text-[28px] font-bold font-mono tracking-tight relative z-10 ${accent}`}>{value}</div>
-      {sub && <div className="text-[11px] text-secondary-text/80 mt-1 relative z-10 font-medium">{sub}</div>}
-    </div>
-  );
-}
-
-function ChartCard({
-  title,
-  children,
-  className = "",
-}: {
-  title: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={`bg-surface-slate/40 backdrop-blur-md border border-white/5 hover:border-white/10 transition-colors rounded-[24px] p-6 relative ${className}`}>
-      <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text mb-6 flex items-center gap-2">
-        <div className="w-1.5 h-1.5 rounded-full bg-mint shadow-[0_0_8px_rgba(14,165,233,0.8)]" />
+    <div className="bg-[#111116]/80 backdrop-blur-xl border border-white/5 rounded-[20px] p-5 flex flex-col justify-between h-[140px] shadow-lg hover:bg-[#15151a]/90 transition-colors">
+      <div className="text-[13px] text-white/60 font-medium">
         {title}
       </div>
-      <div className="relative z-10">
-        {children}
+      <div>
+        <div className={`text-[36px] font-semibold tracking-tight ${valueColor} leading-none mb-2`}>
+          {value}
+        </div>
+        <div className="text-[11px] text-white/40">
+          {sub}
+        </div>
       </div>
     </div>
   );

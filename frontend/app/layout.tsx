@@ -3,6 +3,7 @@ import { Epilogue, Space_Grotesk } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import Nav from "@/components/nav";
+import { PageWrapper } from "@/components/PageWrapper";
 import "./globals.css";
 
 const epilogue = Epilogue({
@@ -46,7 +47,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ClerkProvider>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
             <Nav />
-            {children}
+            <PageWrapper>
+              {children}
+            </PageWrapper>
           </ThemeProvider>
         </ClerkProvider>
       </body>

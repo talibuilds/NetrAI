@@ -15,7 +15,7 @@ export default function LoginPage() {
               className="h-[64px] w-auto drop-shadow-lg" 
               priority
             />
-            <div className="font-display text-4xl font-black italic tracking-tighter bg-gradient-to-br from-[#0ea5e9] to-[#8b5cf6] bg-clip-text text-transparent drop-shadow-sm text-center">
+            <div className="font-display text-4xl font-bold tracking-tight text-white drop-shadow-sm text-center">
               NetrAI
             </div>
           </div>
