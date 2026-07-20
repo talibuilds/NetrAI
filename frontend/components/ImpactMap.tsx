@@ -593,7 +593,7 @@ export default function ImpactMap() {
             latitude: BENGALURU_CENTER.latitude,
             zoom: BENGALURU_CENTER.zoom,
           }}
-          mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+          mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
           style={{ width: "100%", height: "100%" }}
           attributionControl={false}
         >
