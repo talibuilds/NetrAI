@@ -12,6 +12,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+torch.set_num_threads(1)
 from PIL import Image, ImageDraw, ImageFont
 from ultralytics import YOLO
 

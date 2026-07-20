@@ -64,9 +64,18 @@ async def lifespan(app: FastAPI):
     # Load models in a background thread so we don't block Uvicorn from binding the port!
     # If this blocks, Render health checks timeout and kill the container.
     def load_all_models():
+        import gc
+        import time
         _state["waste"] = load_waste()
+        gc.collect()
+        time.sleep(1)
+        
         _state["road"] = load_road()
+        gc.collect()
+        time.sleep(1)
+        
         load_predict_model()
+        gc.collect()
     
     asyncio.create_task(asyncio.to_thread(load_all_models))
 
