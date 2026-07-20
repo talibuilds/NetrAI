@@ -6,6 +6,11 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Force cache directories to be inside the project root (writable on Render)
+os.environ["TORCH_HOME"] = os.environ.get("TORCH_HOME", str(BASE_DIR / ".torch_cache"))
+os.environ["YOLO_CONFIG_DIR"] = os.environ.get("YOLO_CONFIG_DIR", str(BASE_DIR / ".yolo_config"))
+os.environ["MPLCONFIGDIR"] = os.environ.get("MPLCONFIGDIR", str(BASE_DIR / ".mpl_config"))
+
 # ───────────────────────── Model Config ───────────────────────── #
 # Open-vocabulary YOLO-E large seg. Auto-downloads on first YOLO() call (~100MB).
 WASTE_MODEL = os.getenv("WASTE_MODEL", "yolov8s-world.pt")

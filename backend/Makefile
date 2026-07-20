@@ -15,6 +15,7 @@ help:
 
 install:
 	uv sync
+	uv run python scripts/download_models.py
 
 up:
 	$(COMPOSE) up -d
