@@ -12,8 +12,8 @@ os.environ["YOLO_CONFIG_DIR"] = os.environ.get("YOLO_CONFIG_DIR", str(BASE_DIR /
 os.environ["MPLCONFIGDIR"] = os.environ.get("MPLCONFIGDIR", str(BASE_DIR / ".mpl_config"))
 
 # ───────────────────────── Model Config ───────────────────────── #
-# Open-vocabulary YOLO-E large seg. Auto-downloads on first YOLO() call (~100MB).
-WASTE_MODEL = os.getenv("WASTE_MODEL", "yolov8s-world.pt")
+# Use standard YOLOv8 nano to prevent OOM on 512MB instances
+WASTE_MODEL = os.getenv("WASTE_MODEL", "yolov8n.pt")
 ROAD_TFLITE = BASE_DIR / "best_int8.tflite"
 
 # Road model inference

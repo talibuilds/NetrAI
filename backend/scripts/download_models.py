@@ -17,15 +17,10 @@ print(f"Set TORCH_HOME to {os.environ['TORCH_HOME']}")
 from ultralytics import YOLO
 
 def main():
-    print("Pre-downloading YOLOv8s-world.pt...")
-    model = YOLO("yolov8s-world.pt")
-    print("Pre-downloading CLIP prompts (triggers ViT-B/32 download)...")
-    try:
-        # Trigger CLIP download by setting text prompts
-        model.set_classes(["trash", "garbage", "plastic"])
-        print("Models successfully cached!")
-    except Exception as e:
-        print(f"Error caching models: {e}")
+    print("Pre-downloading YOLOv8 nano...")
+    model = YOLO("yolov8n.pt")
+    print("Pre-downloading TFLite road model is handled elsewhere.")
+    print("Models successfully cached!")
 
 if __name__ == "__main__":
     main()

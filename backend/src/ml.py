@@ -45,29 +45,26 @@ USE_HALF = DEVICE.startswith("cuda")
 
 # ───────────────────────── Model loading ───────────────────────── #
 def load_waste() -> YOLO | None:
-    """Load YOLO-E and bind the open-vocabulary trash prompts.
-
-    `WASTE_MODEL` can be a bare filename — ultralytics auto-downloads known
-    model names (like `yoloe-11l-seg.pt`) to the working directory on first
-    use (~100 MB).
-    """
+    """Load YOLO (nano/small)."""
     print(f"[model] loading waste → {WASTE_MODEL} on {DEVICE} (auto-download if needed)")
     try:
         m = YOLO(str(WASTE_MODEL))
     except Exception as e:
         print(f"[model] waste load failed: {type(e).__name__}: {e}")
         return None
-    try:
-        text_pe = m.get_text_pe(TRASH_PROMPTS)
-        m.set_classes(TRASH_PROMPTS, text_pe)
-    except Exception as e:
-        print(f"[model] get_text_pe unavailable ({e}); falling back to set_classes")
+        
+    if "world" in str(WASTE_MODEL).lower():
         try:
-            m.set_classes(TRASH_PROMPTS)
-        except Exception as e2:
-            print(f"[model] set_classes failed: {e2}")
-            return None
-    print(f"[model] waste ready · {len(TRASH_PROMPTS)} prompts · half={USE_HALF}")
+            text_pe = m.get_text_pe(TRASH_PROMPTS)
+            m.set_classes(TRASH_PROMPTS, text_pe)
+        except Exception as e:
+            print(f"[model] get_text_pe unavailable ({e}); falling back to set_classes")
+            try:
+                m.set_classes(TRASH_PROMPTS)
+            except Exception as e2:
+                print(f"[model] set_classes failed: {e2}")
+    
+    print(f"[model] waste ready · half={USE_HALF}")
     return m
 
 
@@ -186,6 +183,9 @@ def run_road(model: YOLO | None, img: Image.Image) -> tuple[list, float]:
 
 
 # ───────────────────────── Waste pipeline (YOLO-E, tiled) ───────────────────────── #
+# Standard COCO classes that roughly correspond to urban waste/litter
+COCO_WASTE_CLASSES = {"bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "book", "vase"}
+
 def _waste_pass(model: YOLO, img: Image.Image, x_off: float, y_off: float, imgsz: int) -> list:
     r = model.predict(
         img,
@@ -205,10 +205,18 @@ def _waste_pass(model: YOLO, img: Image.Image, x_off: float, y_off: float, imgsz
     out = []
     if res.boxes is None:
         return out
+        
+    is_world = "world" in str(WASTE_MODEL).lower()
+        
     for i, box in enumerate(res.boxes):
         bx1, by1, bx2, by2 = box.xyxy[0].cpu().numpy()[:4]
         cls_id = int(box.cls[0])
         label = names.get(cls_id, str(cls_id)) if isinstance(names, dict) else names[cls_id]
+        
+        # If it's a standard COCO model, filter out non-waste items like 'person', 'car'
+        if not is_world and label.lower() not in COCO_WASTE_CLASSES:
+            continue
+            
         poly = None
         if masks_xy is not None and i < len(masks_xy) and len(masks_xy[i]) >= 3:
             poly = [(float(px + x_off), float(py + y_off)) for px, py in masks_xy[i]]
