@@ -7,6 +7,8 @@ import os
 import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+import threading
+import gc
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -83,6 +85,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Dammage Detection API", lifespan=lifespan)
+_inference_lock = threading.Lock()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -158,8 +161,11 @@ async def report(
     img = _read_image(data)
     W, H = img.size
 
-    waste_dets, waste_stats, waste_sev, waste_imp = run_waste(_state["waste"], img)
-    road_dets, road_sev = run_road(_state["road"], img)
+    # ── Inference with memory locks and garbage collection (prevents OOM on 512MB RAM)
+    with _inference_lock:
+        waste_dets, waste_stats, waste_sev, waste_imp = run_waste(_state["waste"], img)
+        road_dets, road_sev = run_road(_state["road"], img)
+        gc.collect()
 
     coll: Collection = db[MONGO_COLL]
     lng_s, lat_s = _snap_coords(lng, lat)

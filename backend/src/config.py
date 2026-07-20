@@ -31,8 +31,8 @@ WASTE_TILE_OVERLAP = 0.35
 WASTE_FULL_IMGSZ = 1280
 WASTE_MERGE_IOU = 0.55
 WASTE_MAX_IMAGE_DIM = 4096  # resize beyond this before inference
-# Tiling trades latency for small-object recall. Disable on CPU-only hosts.
-WASTE_TILED = os.getenv("WASTE_TILED", "true").lower() == "true"
+# Tiling trades latency for small-object recall. Disable on CPU-only hosts to save RAM!
+WASTE_TILED = os.getenv("WASTE_TILED", "false").lower() == "true"
 
 # Open-vocabulary prompts passed to YOLO-E.
 TRASH_PROMPTS = [
