@@ -118,7 +118,7 @@ export default function ScanPage() {
     setResult(null);
     const warmTimer = setTimeout(() => setWarmingUp(false), 3000);
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60_000);
+    const timeoutId = setTimeout(() => controller.abort(), 180_000); // 3 minutes timeout
 
     try {
       const fd = new FormData();
@@ -188,18 +188,19 @@ export default function ScanPage() {
       <div className="max-w-[1300px] mx-auto px-6 py-8">
         <div className="flex items-baseline justify-between mb-6">
           <div>
-            <h1 className="font-display text-[48px] md:text-[64px] font-black text-foreground uppercase leading-none tracking-tight">
+            <h1 className="font-display text-[32px] md:text-[42px] font-black text-foreground uppercase leading-none tracking-tight">
               Scan
             </h1>
-            <div className="text-[11px] text-secondary-text uppercase tracking-[1.5px] mt-1">
+            <div className="text-[10px] text-secondary-text uppercase tracking-[1.5px] mt-1 font-bold">
               One image · road + waste in parallel
             </div>
           </div>
           {file && !result && !loading && location && (
-            <button
+              <button
               onClick={onSubmit}
-              className="bg-mint text-black text-[11px] font-bold uppercase tracking-[0.15em] px-6 py-2.5 rounded-[24px] hover:bg-foreground hover:text-canvas transition-colors"
+              className="btn-primary"
             >
+              <Cpu className="h-4 w-4" />
               Run Detection
             </button>
           )}
@@ -231,13 +232,13 @@ export default function ScanPage() {
             {result && !result.cleaned && (
               <div className="flex flex-wrap items-center gap-2 text-[12px]">
                 {roadCount > 0 && (
-                  <span className="flex items-center gap-1.5 bg-mint text-black font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-[20px]">
+                  <span className="flex items-center gap-1.5 bg-destructive/20 border border-destructive/30 text-destructive font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-[20px] shadow-[0_0_10px_rgba(255,0,0,0.1)]">
                     <Construction className="h-3.5 w-3.5" />
                     {roadCount} pothole{roadCount !== 1 ? "s" : ""} · sev {roadSev.toFixed(1)}
                   </span>
                 )}
                 {wasteCount > 0 && (
-                  <span className="flex items-center gap-1.5 bg-[#f59e0b] text-black font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-[20px]">
+                  <span className="flex items-center gap-1.5 bg-[#f59e0b]/20 border border-[#f59e0b]/30 text-[#f59e0b] font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-[20px] shadow-[0_0_10px_rgba(245,158,11,0.1)]">
                     <Trash2 className="h-3.5 w-3.5" />
                     {wasteCount} waste · sev {wasteSev.toFixed(1)}
                   </span>
@@ -254,25 +255,33 @@ export default function ScanPage() {
               </div>
             )}
 
-            <div className="relative bg-surface-slate rounded-[20px] border border-image-frame overflow-hidden min-h-[400px] flex items-center justify-center">
+            <div className="relative glass-panel rounded-[20px] overflow-hidden min-h-[300px] flex items-center justify-center p-2">
               {displayImage ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  key={`${picked?.id ?? 0}-${result ? "res" : "prev"}`}
-                  src={displayImage}
-                  alt="Scan"
-                  className="block w-full h-auto"
-                />
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    key={`${picked?.id ?? 0}-${result ? "res" : "prev"}`}
+                    src={displayImage}
+                    alt="Scan"
+                    className="block w-full h-auto max-h-[500px] object-contain rounded-xl"
+                  />
+                  {loading && (
+                    <div className="absolute inset-0 bg-mint/5 pointer-events-none z-10 flex flex-col justify-end overflow-hidden">
+                      <div className="absolute w-full h-0.5 bg-mint shadow-[0_0_15px_rgba(14,165,233,1)] animate-scanner z-20"></div>
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-mint/20 animate-pulse"></div>
+                    </div>
+                  )}
+                </>
               ) : (
-                <label className="flex flex-col items-center gap-4 cursor-pointer p-12 text-center">
-                  <div className="w-16 h-16 rounded-full border-2 border-dashed border-image-frame flex items-center justify-center">
-                    <Upload className="h-6 w-6 text-secondary-text" />
+                <label className="flex flex-col items-center gap-4 cursor-pointer p-12 text-center w-full h-full justify-center transition-colors hover:bg-white/5 rounded-xl">
+                  <div className="w-16 h-16 rounded-full border-2 border-dashed border-mint/50 flex items-center justify-center shadow-[0_0_15px_rgba(14,165,233,0.1)]">
+                    <Upload className="h-6 w-6 text-mint" />
                   </div>
                   <div>
-                    <div className="text-[13px] font-bold text-foreground uppercase tracking-[1.5px] mb-1">
+                    <div className="text-[13px] font-bold text-mint-fg uppercase tracking-[1.5px] mb-1">
                       Upload a scan
                     </div>
-                    <div className="text-[11px] text-secondary-text">
+                    <div className="text-[11px] text-secondary-text font-mono">
                       JPG, PNG, WEBP · Max 10 MB
                     </div>
                   </div>
@@ -282,8 +291,8 @@ export default function ScanPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <label className="bg-mint text-black text-[11px] font-bold uppercase tracking-[0.15em] px-5 py-2.5 rounded-[24px] hover:bg-foreground hover:text-canvas transition-colors cursor-pointer flex items-center gap-2">
-                <Upload className="h-3.5 w-3.5" />
+              <label className="btn-secondary cursor-pointer">
+                <Upload className="h-4 w-4" />
                 {file ? "Replace Image" : "Upload Image"}
                 <input type="file" accept="image/*" className="sr-only" onChange={onPick} />
               </label>
@@ -291,10 +300,10 @@ export default function ScanPage() {
                 <button
                   onClick={onSubmit}
                   disabled={!location}
-                  className="bg-ultraviolet text-white text-[11px] font-bold uppercase tracking-[0.15em] px-5 py-2.5 rounded-[24px] hover:bg-foreground hover:text-canvas transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
                   title={location ? "Run detection" : "Set location first"}
                 >
-                  <Cpu className="h-3.5 w-3.5" />
+                  <Cpu className="h-4 w-4" />
                   Run Detection
                 </button>
               )}
@@ -313,15 +322,15 @@ export default function ScanPage() {
                 <>
                   <button
                     onClick={resetScan}
-                    className="border border-image-frame text-secondary-text text-[11px] font-bold uppercase tracking-[0.15em] px-5 py-2.5 rounded-[24px] hover:border-mint hover:text-mint-fg transition-colors"
+                    className="btn-secondary"
                   >
                     New Scan
                   </button>
                   <Link
                     href="/map"
-                    className="border border-mint text-mint-fg text-[11px] font-bold uppercase tracking-[0.15em] px-5 py-2.5 rounded-[24px] hover:bg-mint hover:text-black transition-colors flex items-center gap-2"
+                    className="btn-primary"
                   >
-                    <MapPin className="h-3.5 w-3.5" />
+                    <MapPin className="h-4 w-4" />
                     View on Map
                   </Link>
                 </>
@@ -330,16 +339,16 @@ export default function ScanPage() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <div className="bg-surface-slate rounded-[20px] p-5 border border-image-frame">
-              <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text mb-4">
+            <div className="glass-panel rounded-[20px] p-5">
+              <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-mint-fg mb-4">
                 Location <span className="text-destructive">*</span>
               </div>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
                 <button
                   type="button"
                   onClick={handleGetLocation}
                   disabled={locLoading}
-                  className="w-full text-[11px] font-bold uppercase tracking-[0.12em] border border-image-frame px-4 py-2.5 rounded-[12px] hover:border-mint hover:text-mint-fg transition-colors disabled:opacity-50"
+                  className="w-full text-[11px] font-bold uppercase tracking-[0.12em] bg-surface-high/10 border border-image-frame px-4 py-3 rounded-[12px] hover:border-mint hover:text-mint-fg hover:bg-mint/5 transition-all disabled:opacity-50"
                 >
                   {locLoading ? "Getting location…" : location ? "Update Location" : "Use My Location"}
                 </button>
@@ -379,11 +388,11 @@ export default function ScanPage() {
               </div>
             </div>
 
-            <div className="bg-surface-slate rounded-[20px] p-5 border border-image-frame">
-              <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text mb-4">
+            <div className="glass-panel rounded-[20px] p-5">
+              <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-mint-fg mb-4">
                 Reporter
               </div>
-              <div className="text-[13px] text-foreground break-all">
+              <div className="text-[13px] text-foreground font-mono break-all bg-surface-high/10 p-3 rounded-lg border border-image-frame">
                 {email || (
                   <span className="text-secondary-text italic">Anonymous</span>
                 )}
@@ -391,8 +400,8 @@ export default function ScanPage() {
             </div>
 
             {result?.waste_stats && result.waste_stats.total_detections > 0 && (
-              <div className="bg-surface-slate rounded-[20px] p-5 border border-image-frame">
-                <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text mb-4">
+              <div className="glass-panel rounded-[20px] p-5">
+                <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#f59e0b] mb-4">
                   Waste Breakdown
                 </div>
                 <div className="flex flex-col gap-2">

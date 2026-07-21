@@ -149,3 +149,32 @@
     @apply bg-canvas text-foreground;
   }
 }
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-surface-slate/80 backdrop-blur-md border border-image-frame shadow-[0_0_15px_rgba(14,165,233,0.1)];
+  }
+  
+  .btn-primary {
+    @apply bg-mint text-black text-[11px] font-bold uppercase tracking-[0.15em] px-6 py-3 rounded-[24px] transition-all hover:bg-mint-fg hover:text-white hover:shadow-[0_0_20px_rgba(14,165,233,0.5)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-transparent border border-image-frame text-secondary-text text-[11px] font-bold uppercase tracking-[0.15em] px-6 py-3 rounded-[24px] transition-all hover:border-mint hover:text-mint-fg hover:shadow-[0_0_15px_rgba(14,165,233,0.2)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2;
+  }
+  
+  .btn-danger {
+    @apply bg-destructive/10 border border-destructive text-destructive text-[11px] font-bold uppercase tracking-[0.15em] px-6 py-3 rounded-[24px] transition-all hover:bg-destructive hover:text-white hover:shadow-[0_0_20px_rgba(255,0,0,0.3)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2;
+  }
+}
+
+@keyframes scanner {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.animate-scanner {
+  animation: scanner 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}

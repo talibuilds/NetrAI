@@ -14,7 +14,7 @@ export function PageWrapper({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="md:pl-[240px] pt-[72px] md:pt-0 min-h-screen flex flex-col">
+    <div className="md:pl-[260px] pt-[72px] md:pt-0 min-h-screen flex flex-col">
       {children}
     </div>
   );

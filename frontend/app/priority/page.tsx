@@ -82,7 +82,7 @@ export default function PriorityPage() {
   };
 
   return (
-    <main className="min-h-screen bg-canvas">
+    <main className="min-h-screen bg-canvas pt-[72px]">
       <div className="max-w-[1400px] mx-auto px-6 py-8">
         <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
           <div>
@@ -95,9 +95,9 @@ export default function PriorityPage() {
           </div>
           <button
             onClick={loadData}
-            className="border border-white/10 bg-white/5 hover:bg-white/10 text-secondary-text text-[11px] font-bold uppercase tracking-[0.15em] px-5 py-2.5 rounded-full backdrop-blur-md hover:text-white hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all flex items-center gap-2"
+            className="btn-secondary"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </button>
         </div>
@@ -109,7 +109,7 @@ export default function PriorityPage() {
           </div>
         )}
 
-        <div className="bg-surface-slate border border-image-frame rounded-[24px] overflow-hidden shadow-2xl">
+        <div className="glass-panel rounded-[24px] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>

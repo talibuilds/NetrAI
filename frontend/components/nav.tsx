@@ -26,8 +26,8 @@ export default function Nav() {
 
   return (
     <>
-      <nav className="fixed left-0 top-0 h-screen w-[240px] z-50 flex flex-col bg-canvas/80 backdrop-blur-xl border-r border-white/5 hidden md:flex">
-        <div className="p-6 pb-8 flex items-center gap-3">
+      <nav className="fixed left-0 top-0 h-screen w-[260px] z-50 flex flex-col glass-panel hidden md:flex border-r border-image-frame rounded-r-3xl my-2">
+        <div className="p-8 pb-10 flex items-center gap-3">
           <Image 
             src="/netrai_icon.svg" 
             alt="NetrAI Icon" 
@@ -49,13 +49,13 @@ export default function Nav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-4 px-4 py-3 rounded-[12px] font-sans text-[13px] transition-all ${
+                className={`group flex items-center gap-4 px-5 py-3.5 rounded-2xl font-sans text-[13px] font-bold tracking-wide transition-all duration-300 ${
                   active
-                    ? "bg-white/10 text-white font-semibold"
-                    : "text-secondary-text hover:bg-white/5 hover:text-white"
+                    ? "bg-mint/10 text-mint-fg shadow-[inset_0_0_20px_rgba(14,165,233,0.15)] border border-mint/20"
+                    : "text-secondary-text hover:bg-surface-high/20 hover:text-white border border-transparent"
                 }`}
               >
-                <Icon className={`w-4 h-4 ${active ? "text-white" : "opacity-70"}`} />
+                <Icon className={`w-4 h-4 transition-transform duration-300 ${active ? "text-mint-fg scale-110" : "opacity-70 group-hover:scale-110"}`} />
                 {link.label}
               </Link>
             );
@@ -75,27 +75,34 @@ export default function Nav() {
 
         <div className="p-6 mt-auto">
           <Show when="signed-in">
-            <div className="flex items-center gap-3 mb-6 p-3 rounded-[12px] bg-white/5 border border-white/5">
-              <UserButton />
-              <div className="text-[12px] text-secondary-text">Account</div>
+            <div className="flex items-center justify-between mb-6 p-4 rounded-2xl bg-surface-high/10 border border-image-frame hover:border-mint/30 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="p-1 rounded-full bg-mint/10 border border-mint/20">
+                  <UserButton />
+                </div>
+                <div className="text-[12px] font-bold text-foreground">Admin Access</div>
+              </div>
             </div>
           </Show>
           <Show when="signed-out">
             <Link
               href="/login"
-              className="flex items-center gap-2 mb-6 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-[12px] text-white text-[12px] font-semibold transition-colors"
+              className="flex items-center justify-center gap-2 mb-6 px-4 py-3 bg-mint/10 hover:bg-mint text-mint-fg hover:text-black border border-mint/30 rounded-2xl text-[12px] font-bold uppercase tracking-[1.5px] transition-all duration-300"
             >
               <LogIn className="w-4 h-4" />
               Sign In
             </Link>
           </Show>
-          <div className="flex items-center gap-3 text-[11px] text-secondary-text">
-            <div className="w-6 h-6 rounded-full bg-[#22c55e]/10 border border-[#22c55e]/30 flex items-center justify-center shrink-0">
-              <Radio className="w-3 h-3 text-[#22c55e]" />
+          <div className="flex items-center gap-3 text-[11px] text-secondary-text p-4 rounded-2xl bg-black/40 border border-image-frame">
+            <div className="relative flex items-center justify-center w-6 h-6 shrink-0">
+              <div className="absolute inset-0 rounded-full bg-[#22c55e]/20 animate-ping"></div>
+              <div className="w-4 h-4 rounded-full bg-[#22c55e]/20 border border-[#22c55e]/50 flex items-center justify-center">
+                <Radio className="w-2.5 h-2.5 text-[#22c55e]" />
+              </div>
             </div>
             <div>
-              <div className="text-white font-semibold">System Online</div>
-              <div className="text-[10px] opacity-70">All systems operational</div>
+              <div className="text-white font-bold tracking-wider uppercase">System Online</div>
+              <div className="text-[10px] opacity-70 tracking-widest font-mono">ALL SYSTEMS NOMINAL</div>
             </div>
           </div>
         </div>

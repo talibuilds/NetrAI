@@ -503,7 +503,7 @@ export default function ImpactMap() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-gray-900 text-gray-100">
+    <div className="flex h-[calc(100vh-72px)] md:h-screen w-full overflow-hidden bg-gray-900 text-gray-100">
       {/* Left Panel */}
       <aside className="flex h-full w-[30%] min-w-[360px] flex-col border-r border-gray-800 bg-gray-950/90">
         <header className="border-b border-gray-800 px-5 py-4">

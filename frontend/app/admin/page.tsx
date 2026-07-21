@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Download, Search, AlertCircle, Circle, ChevronDown, RefreshCw, ShieldCheck, Check } from "lucide-react";
 import { ReportDetailModal } from "@/components/ReportDetailModal";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const API = process.env.NEXT_PUBLIC_ML_API ?? "http://127.0.0.1:8000";
 
@@ -170,6 +171,8 @@ export default function IssueTrackerPage() {
       all: reports.length,
       critical: reports.filter((r) => severityBucket(r.severity_score) === "critical").length,
       high: reports.filter((r) => severityBucket(r.severity_score) === "high").length,
+      medium: reports.filter((r) => severityBucket(r.severity_score) === "medium").length,
+      low: reports.filter((r) => severityBucket(r.severity_score) === "low").length,
       pending: byDisplay.pending,
       process: byDisplay.process,
       completed: byDisplay.completed,
@@ -264,39 +267,106 @@ export default function IssueTrackerPage() {
     return false;
   }
 
+  const typeData = [
+    { name: "Potholes", value: counts.pothole, fill: "#ef4444" },
+    { name: "Trash", value: counts.trash, fill: "#f59e0b" },
+  ];
+
+  const severityData = [
+    { name: "Critical", value: counts.critical, fill: "#ef4444" },
+    { name: "High", value: counts.high, fill: "#f59e0b" },
+    { name: "Medium", value: counts.medium, fill: "#eab308" },
+    { name: "Low", value: counts.low, fill: "#3b82f6" },
+  ];
+
   return (
     <main className="min-h-screen bg-canvas">
-      <div className="max-w-[1400px] mx-auto px-6 py-8">
-        <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
+      <div className="max-w-[1400px] mx-auto px-6 py-8 pt-[72px]">
+        <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
           <div>
             <h1 className="font-display text-[48px] md:text-[56px] font-black text-foreground uppercase leading-none tracking-tight mb-2">
-              Issue Tracker
+              Admin Dashboard
             </h1>
             <div className="text-[12px] text-secondary-text tracking-[0.5px] flex items-center gap-2">
               {counts.all.toLocaleString()} issues · {counts.critical} critical · live sync every 5s
               {isAdmin && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[1.5px] text-[#22c55e] border border-[#22c55e]/50 bg-[#22c55e]/10 px-2 py-0.5 rounded-[6px]">
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[1.5px] text-[#22c55e] border border-[#22c55e]/50 bg-[#22c55e]/10 px-2 py-0.5 rounded-[6px] shadow-[0_0_10px_rgba(34,197,94,0.2)]">
                   <ShieldCheck className="h-3 w-3" />
                   Admin
                 </span>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={loadData}
               title="Refresh"
-              className="border border-image-frame text-secondary-text text-[11px] font-bold uppercase tracking-[0.15em] px-3 py-2.5 rounded-[24px] hover:border-mint hover:text-mint-fg transition-colors flex items-center gap-2"
+              className="btn-secondary"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Refresh
             </button>
             <button
               onClick={exportCsv}
-              className="border border-image-frame text-secondary-text text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-2.5 rounded-[24px] hover:border-mint hover:text-mint-fg transition-colors flex items-center gap-2"
+              className="btn-primary"
             >
-              <Download className="h-3.5 w-3.5" />
+              <Download className="h-4 w-4" />
               Export CSV
             </button>
+          </div>
+        </div>
+
+        {/* Dashboard Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between">
+            <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text mb-2">Total Issues</div>
+            <div className="text-[36px] font-black text-foreground">{counts.all}</div>
+          </div>
+          <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between border-b-4 border-b-[#ef4444]">
+            <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#ef4444] mb-2">Critical</div>
+            <div className="text-[36px] font-black text-foreground">{counts.critical}</div>
+          </div>
+          <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between border-b-4 border-b-[#f59e0b]">
+            <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#f59e0b] mb-2">In Progress</div>
+            <div className="text-[36px] font-black text-foreground">{counts.process}</div>
+          </div>
+          <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between border-b-4 border-b-[#22c55e]">
+            <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#22c55e] mb-2">Resolved</div>
+            <div className="text-[36px] font-black text-foreground">{counts.completed}</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 h-[250px]">
+          <div className="glass-panel p-5 rounded-2xl flex flex-col">
+            <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text mb-4">Issues by Type</div>
+            <div className="flex-1 min-h-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={typeData}>
+                  <XAxis dataKey="name" tick={{fontSize: 10, fill: "#64748b"}} axisLine={false} tickLine={false} />
+                  <Tooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{backgroundColor: '#0a0a0a', border: '1px solid #333', borderRadius: '8px', fontSize: '12px'}} />
+                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                    {typeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="glass-panel p-5 rounded-2xl flex flex-col">
+            <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text mb-4">Severity Distribution</div>
+            <div className="flex-1 min-h-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={severityData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={60} paddingAngle={5}>
+                    {severityData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{backgroundColor: '#0a0a0a', border: '1px solid #333', borderRadius: '8px', fontSize: '12px'}} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
@@ -315,31 +385,33 @@ export default function IssueTrackerPage() {
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          {chips.map((chip) => {
-            const active = isActive(filter, chip.filter);
-            return (
-              <button
-                key={chip.label}
-                onClick={() => setFilter(chip.filter)}
-                className={`text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-2 rounded-[20px] transition-colors ${
-                  active
-                    ? "bg-[#f59e0b] text-black"
-                    : "border border-image-frame text-secondary-text hover:border-[#f59e0b] hover:text-[#f59e0b]"
-                }`}
-              >
-                {chip.label} ({chip.count})
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap items-center gap-2 mb-6 bg-surface-high/10 p-2 rounded-2xl border border-image-frame">
+          <div className="flex gap-1 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+            {chips.map((chip) => {
+              const active = isActive(filter, chip.filter);
+              return (
+                <button
+                  key={chip.label}
+                  onClick={() => setFilter(chip.filter)}
+                  className={`text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-2 rounded-[14px] transition-all whitespace-nowrap ${
+                    active
+                      ? "bg-mint text-black shadow-[0_0_10px_rgba(14,165,233,0.3)]"
+                      : "text-secondary-text hover:bg-surface-high/30 hover:text-white"
+                  }`}
+                >
+                  {chip.label} ({chip.count})
+                </button>
+              );
+            })}
+          </div>
 
           <div className="relative ml-auto min-w-[220px]">
-            <Search className="h-3.5 w-3.5 text-secondary-text absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="h-3.5 w-3.5 text-mint-fg absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search issues, locations…"
-              className="w-full bg-canvas border border-image-frame rounded-[20px] pl-9 pr-3 py-2 text-[12px] text-foreground placeholder:text-secondary-text focus:outline-none focus:border-[#f59e0b]"
+              placeholder="Search issues…"
+              className="w-full bg-black/40 border border-image-frame rounded-[14px] pl-9 pr-3 py-2 text-[12px] text-foreground placeholder:text-secondary-text focus:outline-none focus:border-mint transition-colors"
             />
           </div>
 
@@ -347,13 +419,13 @@ export default function IssueTrackerPage() {
             onClick={() =>
               setSortBy((s) => (s === "severity" ? "time" : s === "time" ? "reports" : "severity"))
             }
-            className="text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-2 rounded-[20px] border border-image-frame text-secondary-text hover:border-mint hover:text-mint-fg transition-colors flex items-center gap-2"
+            className="text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-2 rounded-[14px] bg-black/40 border border-image-frame text-secondary-text hover:border-mint hover:text-mint-fg transition-colors flex items-center gap-2"
           >
-            ↓ Sort by {sortBy}
+            Sort: {sortBy}
           </button>
         </div>
 
-        <div className="bg-surface-slate border border-image-frame rounded-[16px] overflow-visible">
+        <div className="glass-panel rounded-2xl overflow-visible">
           <div className="grid grid-cols-[1.4fr_1.2fr_0.7fr_0.7fr_0.6fr_1.1fr_0.7fr] gap-2 px-5 py-3 border-b border-image-frame text-[10px] font-bold uppercase tracking-[1.5px] text-secondary-text bg-canvas/50">
             <div>Issue</div>
             <div>Location</div>
