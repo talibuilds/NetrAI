@@ -130,24 +130,30 @@ export default function DashboardPage() {
   }, [reports]);
 
   return (
-    <main className="min-h-screen bg-canvas text-foreground p-6 md:p-8 relative overflow-hidden">
+    <main className="min-h-screen bg-[#07070a] text-white p-6 md:p-8 relative overflow-hidden">
+      {/* Background glow effects matching the design */}
+      <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-[#3b82f6] rounded-full blur-[150px] opacity-[0.07] pointer-events-none" />
+      <div className="absolute top-[40%] right-[10%] w-[600px] h-[600px] bg-[#a855f7] rounded-full blur-[180px] opacity-[0.05] pointer-events-none" />
+
       <div className="max-w-[1400px] mx-auto relative z-10">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div>
-            <div className="text-[19px] font-light uppercase tracking-[1.9px] mb-2">Live overview</div>
-            <h1 className="font-display text-[60px] md:text-[107px] font-black text-white leading-[0.8] tracking-[1.07px]">
+            <h1 className="text-[32px] md:text-[40px] font-bold text-white tracking-tight leading-tight">
               Dashboard
             </h1>
+            <div className="text-[14px] text-white/50">
+              Live overview of your infrastructure
+            </div>
           </div>
           <div className="flex items-center gap-3">
-            <button className="btn-secondary">
+            <button className="px-5 py-2.5 rounded-[12px] bg-white/5 border border-white/10 text-white/80 text-[13px] hover:bg-white/10 hover:text-white transition-colors">
               New Inspection
             </button>
             <button 
               onClick={loadData}
-              className="btn-primary"
+              className="px-5 py-2.5 rounded-[12px] bg-white/5 border border-white/10 text-white/80 text-[13px] hover:bg-white/10 hover:text-white transition-colors flex items-center gap-2"
             >
               {loading && <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
               Refresh Data
@@ -197,10 +203,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Chart */}
-        <div className="glass-panel p-6">
+        <div className="bg-[#111116]/80 backdrop-blur-xl border border-white/5 rounded-[20px] p-6 shadow-2xl">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text">Issues Reported (14 Days)</h2>
-            <select className="bg-transparent text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text border-none outline-none cursor-pointer hover:text-white focus:outline-none">
+            <h2 className="text-[14px] text-white/90">Issues Reported (14 Days)</h2>
+            <select className="bg-transparent text-[13px] text-white/70 border-none outline-none cursor-pointer hover:text-white">
               <option>14 Days</option>
               <option>30 Days</option>
               <option>All Time</option>
@@ -285,15 +291,15 @@ export default function DashboardPage() {
 
 function KpiCard({ title, value, sub, valueColor }: { title: React.ReactNode, value: string, sub: string, valueColor: string }) {
   return (
-    <div className="glass-panel p-5 flex flex-col justify-between h-[140px] hover:border-mint transition-colors">
-      <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text mb-4">
+    <div className="bg-[#111116]/80 backdrop-blur-xl border border-white/5 rounded-[20px] p-5 flex flex-col justify-between h-[140px] shadow-lg hover:bg-[#15151a]/90 transition-colors">
+      <div className="text-[13px] text-white/60 font-medium">
         {title}
       </div>
       <div>
-        <div className={`font-display text-[48px] font-black tracking-tight ${valueColor} leading-none mb-2`}>
+        <div className={`text-[36px] font-semibold tracking-tight ${valueColor} leading-none mb-2`}>
           {value}
         </div>
-        <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text">
+        <div className="text-[11px] text-white/40">
           {sub}
         </div>
       </div>

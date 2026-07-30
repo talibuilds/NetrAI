@@ -49,13 +49,13 @@ export default function Nav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`group flex items-center gap-4 px-5 py-3.5 rounded-[20px] font-sans text-[13px] font-bold tracking-wide transition-all duration-300 ${
+                className={`group flex items-center gap-4 px-5 py-3.5 rounded-2xl font-sans text-[13px] font-bold tracking-wide transition-all duration-300 ${
                   active
-                    ? "bg-surface-slate text-mint border border-mint"
-                    : "text-secondary-text hover:bg-transparent hover:text-deep-link border border-transparent"
+                    ? "bg-mint/10 text-mint-fg shadow-[inset_0_0_20px_rgba(14,165,233,0.15)] border border-mint/20"
+                    : "text-secondary-text hover:bg-surface-high/20 hover:text-white border border-transparent"
                 }`}
               >
-                <Icon className={`w-4 h-4 transition-transform duration-300 ${active ? "text-mint scale-110" : "opacity-70 group-hover:scale-110"}`} />
+                <Icon className={`w-4 h-4 transition-transform duration-300 ${active ? "text-mint-fg scale-110" : "opacity-70 group-hover:scale-110"}`} />
                 {link.label}
               </Link>
             );
@@ -66,7 +66,7 @@ export default function Nav() {
           </div>
           <Link
             href="#"
-            className="flex items-center gap-4 px-4 py-3 rounded-[20px] font-sans text-[13px] text-secondary-text hover:bg-transparent hover:text-deep-link transition-all"
+            className="flex items-center gap-4 px-4 py-3 rounded-[12px] font-sans text-[13px] text-secondary-text hover:bg-white/5 hover:text-white transition-all"
           >
             <Settings className="w-4 h-4 opacity-70" />
             Settings
@@ -109,12 +109,12 @@ export default function Nav() {
       </nav>
 
       {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 w-full z-50 flex justify-between items-center px-6 h-[72px] bg-canvas border-b border-image-frame">
+      <div className="md:hidden fixed top-0 w-full z-50 flex justify-between items-center px-6 h-[72px] bg-canvas/90 backdrop-blur-md border-b border-white/5">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/netrai_icon.svg" alt="Icon" width={24} height={24} />
-          <span className="font-display text-[20px] font-black tracking-[1.07px] text-white">NetrAI</span>
+          <span className="font-display text-[20px] font-bold text-white">NetrAI</span>
         </Link>
-        <button className="text-white p-2 hover:text-deep-link transition-colors" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button className="text-white p-2" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>

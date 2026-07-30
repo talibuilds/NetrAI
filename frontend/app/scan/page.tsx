@@ -188,11 +188,10 @@ export default function ScanPage() {
       <div className="max-w-[1300px] mx-auto px-6 py-8">
         <div className="flex items-baseline justify-between mb-6">
           <div>
-            <div className="text-[19px] font-light uppercase tracking-[1.9px] mb-2 text-secondary-text">Tool</div>
-            <h1 className="font-display text-[60px] md:text-[107px] font-black text-foreground uppercase leading-[0.8] tracking-[1.07px]">
+            <h1 className="font-display text-[32px] md:text-[42px] font-black text-foreground uppercase leading-none tracking-tight">
               Scan
             </h1>
-            <div className="text-[12px] text-secondary-text uppercase tracking-[1.5px] mt-4 font-mono font-bold">
+            <div className="text-[10px] text-secondary-text uppercase tracking-[1.5px] mt-1 font-bold">
               One image · road + waste in parallel
             </div>
           </div>
@@ -233,13 +232,13 @@ export default function ScanPage() {
             {result && !result.cleaned && (
               <div className="flex flex-wrap items-center gap-2 text-[12px]">
                 {roadCount > 0 && (
-                  <span className="flex items-center gap-1.5 bg-destructive text-black font-bold uppercase tracking-[1.5px] px-3 py-1.5 rounded-[20px]">
+                  <span className="flex items-center gap-1.5 bg-destructive/20 border border-destructive/30 text-destructive font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-[20px] shadow-[0_0_10px_rgba(255,0,0,0.1)]">
                     <Construction className="h-3.5 w-3.5" />
                     {roadCount} pothole{roadCount !== 1 ? "s" : ""} · sev {roadSev.toFixed(1)}
                   </span>
                 )}
                 {wasteCount > 0 && (
-                  <span className="flex items-center gap-1.5 bg-[#f59e0b] text-black font-bold uppercase tracking-[1.5px] px-3 py-1.5 rounded-[20px]">
+                  <span className="flex items-center gap-1.5 bg-[#f59e0b]/20 border border-[#f59e0b]/30 text-[#f59e0b] font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-[20px] shadow-[0_0_10px_rgba(245,158,11,0.1)]">
                     <Trash2 className="h-3.5 w-3.5" />
                     {wasteCount} waste · sev {wasteSev.toFixed(1)}
                   </span>
@@ -268,14 +267,14 @@ export default function ScanPage() {
                   />
                   {loading && (
                     <div className="absolute inset-0 bg-mint/5 pointer-events-none z-10 flex flex-col justify-end overflow-hidden">
-                      <div className="absolute w-full h-[1px] bg-mint animate-scanner z-20"></div>
-                      <div className="absolute inset-0 bg-mint/10 animate-pulse"></div>
+                      <div className="absolute w-full h-0.5 bg-mint shadow-[0_0_15px_rgba(14,165,233,1)] animate-scanner z-20"></div>
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-mint/20 animate-pulse"></div>
                     </div>
                   )}
                 </>
               ) : (
-                <label className="flex flex-col items-center gap-4 cursor-pointer p-12 text-center w-full h-full justify-center transition-colors hover:bg-white/5 rounded-[20px]">
-                  <div className="w-16 h-16 rounded-full border border-dashed border-mint flex items-center justify-center">
+                <label className="flex flex-col items-center gap-4 cursor-pointer p-12 text-center w-full h-full justify-center transition-colors hover:bg-white/5 rounded-xl">
+                  <div className="w-16 h-16 rounded-full border-2 border-dashed border-mint/50 flex items-center justify-center shadow-[0_0_15px_rgba(14,165,233,0.1)]">
                     <Upload className="h-6 w-6 text-mint" />
                   </div>
                   <div>
