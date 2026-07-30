@@ -59,9 +59,9 @@ export function ReportDetailModal({
   if (!reportId) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90" onClick={onClose}>
       <div 
-        className="bg-surface-slate border border-image-frame rounded-[24px] shadow-2xl w-full max-w-[800px] max-h-[90vh] overflow-y-auto"
+        className="bg-surface-slate border border-image-frame rounded-[24px] w-full max-w-[800px] max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {loading ? (
@@ -91,7 +91,7 @@ export function ReportDetailModal({
                 <img 
                   src={data.report.image} 
                   alt="Detection" 
-                  className="w-full h-auto aspect-square object-cover rounded-[16px] border border-image-frame shadow-md mb-4"
+                  className="w-full h-auto aspect-square object-cover rounded-[16px] border border-image-frame mb-4"
                 />
               ) : (
                 <div className="w-full aspect-square bg-canvas border border-image-frame rounded-[16px] flex items-center justify-center mb-4">

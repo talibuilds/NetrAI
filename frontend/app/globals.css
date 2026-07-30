@@ -152,19 +152,19 @@
 
 @layer utilities {
   .glass-panel {
-    @apply bg-surface-slate/80 backdrop-blur-md border border-image-frame shadow-[0_0_15px_rgba(14,165,233,0.1)];
+    @apply bg-surface-slate border border-image-frame rounded-[20px];
   }
   
   .btn-primary {
-    @apply bg-mint text-black text-[11px] font-bold uppercase tracking-[0.15em] px-6 py-3 rounded-[24px] transition-all hover:bg-mint-fg hover:text-white hover:shadow-[0_0_20px_rgba(14,165,233,0.5)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2;
+    @apply bg-mint text-black font-mono text-[12px] font-bold uppercase tracking-[1.5px] px-[24px] py-[10px] rounded-[24px] transition-all hover:bg-white/20 hover:shadow-[0_0_0_1px_#c2c2c2] flex items-center justify-center gap-2 outline-none focus:bg-[#1eaedb] focus:text-white focus:border focus:border-[#0500ff];
   }
   
   .btn-secondary {
-    @apply bg-transparent border border-image-frame text-secondary-text text-[11px] font-bold uppercase tracking-[0.15em] px-6 py-3 rounded-[24px] transition-all hover:border-mint hover:text-mint-fg hover:shadow-[0_0_15px_rgba(14,165,233,0.2)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2;
+    @apply bg-surface-slate text-muted-text font-sans text-[16px] font-normal px-[24px] py-[10px] rounded-[24px] transition-all hover:bg-white/20 hover:text-black hover:shadow-[0_0_0_1px_#c2c2c2] flex items-center justify-center gap-2 outline-none focus:bg-[#1eaedb] focus:text-white focus:border focus:border-[#0500ff];
   }
   
   .btn-danger {
-    @apply bg-destructive/10 border border-destructive text-destructive text-[11px] font-bold uppercase tracking-[0.15em] px-6 py-3 rounded-[24px] transition-all hover:bg-destructive hover:text-white hover:shadow-[0_0_20px_rgba(255,0,0,0.3)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2;
+    @apply bg-transparent border border-destructive text-destructive font-mono text-[12px] font-bold uppercase tracking-[1.5px] px-[24px] py-[10px] rounded-[40px] transition-all hover:bg-destructive hover:text-black flex items-center justify-center gap-2;
   }
 }
 

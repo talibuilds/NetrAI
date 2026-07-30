@@ -284,10 +284,11 @@ export default function IssueTrackerPage() {
       <div className="max-w-[1400px] mx-auto px-6 py-8 pt-[72px]">
         <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
           <div>
-            <h1 className="font-display text-[48px] md:text-[56px] font-black text-foreground uppercase leading-none tracking-tight mb-2">
+            <div className="text-[19px] font-light uppercase tracking-[1.9px] mb-2 text-secondary-text">Management</div>
+            <h1 className="font-display text-[60px] md:text-[107px] font-black text-foreground uppercase leading-[0.8] tracking-[1.07px] mb-4">
               Admin Dashboard
             </h1>
-            <div className="text-[12px] text-secondary-text tracking-[0.5px] flex items-center gap-2">
+            <div className="text-[12px] text-secondary-text tracking-[0.5px] flex items-center gap-2 font-mono uppercase">
               {counts.all.toLocaleString()} issues · {counts.critical} critical · live sync every 5s
               {isAdmin && (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[1.5px] text-[#22c55e] border border-[#22c55e]/50 bg-[#22c55e]/10 px-2 py-0.5 rounded-[6px] shadow-[0_0_10px_rgba(34,197,94,0.2)]">
@@ -393,10 +394,10 @@ export default function IssueTrackerPage() {
                 <button
                   key={chip.label}
                   onClick={() => setFilter(chip.filter)}
-                  className={`text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-2 rounded-[14px] transition-all whitespace-nowrap ${
+                  className={`text-[11px] font-bold uppercase tracking-[1.5px] px-4 py-2 rounded-[20px] transition-all whitespace-nowrap ${
                     active
-                      ? "bg-mint text-black shadow-[0_0_10px_rgba(14,165,233,0.3)]"
-                      : "text-secondary-text hover:bg-surface-high/30 hover:text-white"
+                      ? "bg-mint text-black"
+                      : "text-secondary-text hover:bg-surface-slate hover:text-white"
                   }`}
                 >
                   {chip.label} ({chip.count})
@@ -425,8 +426,8 @@ export default function IssueTrackerPage() {
           </button>
         </div>
 
-        <div className="glass-panel rounded-2xl overflow-visible">
-          <div className="grid grid-cols-[1.4fr_1.2fr_0.7fr_0.7fr_0.6fr_1.1fr_0.7fr] gap-2 px-5 py-3 border-b border-image-frame text-[10px] font-bold uppercase tracking-[1.5px] text-secondary-text bg-canvas/50">
+        <div className="glass-panel overflow-visible p-1">
+          <div className="grid grid-cols-[1.4fr_1.2fr_0.7fr_0.7fr_0.6fr_1.1fr_0.7fr] gap-2 px-5 py-4 border-b border-image-frame text-[10px] font-bold uppercase tracking-[1.5px] text-secondary-text bg-canvas">
             <div>Issue</div>
             <div>Location</div>
             <div>Severity</div>
@@ -458,7 +459,7 @@ export default function IssueTrackerPage() {
                 <li
                   key={r.id}
                   onClick={() => setSelectedReportId(r.id)}
-                  className="grid grid-cols-[1.4fr_1.2fr_0.7fr_0.7fr_0.6fr_1.1fr_0.7fr] gap-2 px-5 py-3 border-b border-image-frame/50 last:border-0 items-center hover:bg-canvas/40 transition-colors cursor-pointer group"
+                  className="grid grid-cols-[1.4fr_1.2fr_0.7fr_0.7fr_0.6fr_1.1fr_0.7fr] gap-2 px-5 py-4 border-b border-image-frame/50 last:border-0 items-center hover:bg-surface-slate transition-colors cursor-pointer group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {r.image ? (
