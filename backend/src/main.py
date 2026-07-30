@@ -79,7 +79,7 @@ async def lifespan(app: FastAPI):
         load_predict_model()
         gc.collect()
     
-    asyncio.create_task(asyncio.to_thread(load_all_models))
+    load_all_models()
 
     yield
 
@@ -154,8 +154,8 @@ async def report(
 ):
     t0 = time.perf_counter()
     db = _state.get("mongo")
-    if db is None:
-        raise HTTPException(500, "MongoDB not available")
+    # if db is None:
+    #     raise HTTPException(500, "MongoDB not available")
 
     data = await file.read()
     img = _read_image(data)
@@ -167,14 +167,16 @@ async def report(
         road_dets, road_sev = run_road(_state["road"], img)
         gc.collect()
 
-    coll: Collection = db[MONGO_COLL]
+    coll = db[MONGO_COLL] if db is not None else None
     lng_s, lat_s = _snap_coords(lng, lat)
 
     # ── Cleanup path: nothing detected → soft-resolve the 500 m neighbourhood
     if not waste_dets and not road_dets:
-        resolved_count = _soft_resolve(coll, {
-            "location": {"$geoWithin": {"$centerSphere": [[lng, lat], CLEANUP_RADIUS_M / EARTH_RADIUS_M]}}
-        }, source="auto-clean")
+        resolved_count = 0
+        if coll is not None:
+            resolved_count = _soft_resolve(coll, {
+                "location": {"$geoWithin": {"$centerSphere": [[lng, lat], CLEANUP_RADIUS_M / EARTH_RADIUS_M]}}
+            }, source="auto-clean")
         return {
             "cleaned": True,
             "resolved_count": resolved_count,
@@ -188,11 +190,18 @@ async def report(
     # ── Upload path: overwrite image keyed on rounded coords ("same spot")
     coord_key = f"{lng_s},{lat_s}"
     image_url = upload(f"reports/{coord_key}/input.jpg", _encode_jpeg(img), "image/jpeg")
+    
+    annotated_bytes = annotate(img, waste_dets, road_dets, waste_sev, road_sev)
     annotated_url = upload(
         f"reports/{coord_key}/annotated.png",
-        annotate(img, waste_dets, road_dets, waste_sev, road_sev),
+        annotated_bytes,
         "image/png",
     )
+    
+    # Fallback for displaying the image when Cloudinary is not configured
+    if not annotated_url:
+        import base64
+        annotated_url = "data:image/png;base64," + base64.b64encode(annotated_bytes).decode("utf-8")
 
     now = datetime.now(timezone.utc)
     geo_point = {"type": "Point", "coordinates": [lng_s, lat_s]}
@@ -220,99 +229,106 @@ async def report(
     on_insert = {"created_at": now, "status": "pending", "status_updated_at": None, "status_updated_by": None}
 
     inserted: list[str] = []
-    if waste_dets:
-        coll.update_one(
-            {"_id": trash_id},
-            {
-                "$set": {**common, "type": "trash",
-                         "severity_score": waste_sev, "environmental_impact": waste_imp,
-                         "detections": waste_dets_persist, "stats": waste_stats},
-                "$inc": {"report_count": 1},
-                "$setOnInsert": on_insert,
-            },
-            upsert=True,
-        )
-        inserted.append("trash")
-    if road_dets:
-        coll.update_one(
-            {"_id": pothole_id},
-            {
-                "$set": {**common, "type": "pothole",
-                         "severity_score": road_sev,
-                         "detections": road_dets},
-                "$inc": {"report_count": 1},
-                "$setOnInsert": on_insert,
-            },
-            upsert=True,
-        )
-        inserted.append("pothole")
-
-    # ── Track Layer: Persistent Infrastructure Health Score & ML features
-    total_sev = 0
-    if waste_dets:
-        total_sev += waste_sev * 0.3
-    if road_dets:
-        total_sev += road_sev * 1.0
-
-    if total_sev > 0:
-        asset_id = f"asset_{coord_key}"
-        # Find existing asset or initialize with synthetic ML features
-        asset = db[ASSETS_COLL].find_one({"_id": asset_id})
-        if not asset:
-            import random
-            asset = {
-                "_id": asset_id,
-                "geometry": geo_point,
-                "name": f"Grid {coord_key}",
-                "health_score": 100.0,
-                "health_history": [{"date": now, "score": 100.0}],
-                "traffic_volume": random.randint(1000, 20000),
-                "rainfall_mm": random.randint(10, 150),
-                "road_age_days": random.randint(100, 3000),
-                "recent_damage_events": 0
-            }
-        
-        current_health = asset.get("health_score", 100.0)
-        # Decay health score
-        decay = total_sev * 0.1
-        new_health = max(0.0, current_health - decay)
-        
-        # Update damage events counter
-        new_damage_events = asset.get("recent_damage_events", 0) + 1
-        
-        # Append history
-        history = asset.get("health_history", [])
-        history.append({"date": now, "score": round(new_health, 2)})
-        
-        # Keep last 12 snapshots to prevent infinite array growth
-        if len(history) > 12:
-            history = history[-12:]
-            
-        db[ASSETS_COLL].update_one(
-            {"_id": asset_id},
-            {"$set": {
-                "geometry": geo_point,
-                "name": asset.get("name", f"Grid {coord_key}"),
-                "health_score": round(new_health, 2),
-                "health_history": history,
-                "traffic_volume": asset.get("traffic_volume"),
-                "rainfall_mm": asset.get("rainfall_mm"),
-                "road_age_days": asset.get("road_age_days"),
-                "recent_damage_events": new_damage_events
-            }},
-            upsert=True
-        )
-
-    # ── Stale-type sweep: if a prior scan at this exact spot flagged a type
-    # that isn't in the current scan, the old doc now points at an annotated
-    # image that no longer shows that issue. Soft-resolve it.
-    stale = [t for t in ("trash", "pothole") if t not in inserted]
     stale_resolved = 0
-    if stale:
-        stale_resolved = _soft_resolve(coll, {
-            "type": {"$in": stale},
-            "location.coordinates": [lng_s, lat_s],
-        }, source="auto-stale")
+    if coll is not None:
+        if waste_dets:
+            coll.update_one(
+                {"_id": trash_id},
+                {
+                    "$set": {**common, "type": "trash",
+                             "severity_score": waste_sev, "environmental_impact": waste_imp,
+                             "detections": waste_dets_persist, "stats": waste_stats},
+                    "$inc": {"report_count": 1},
+                    "$setOnInsert": on_insert,
+                },
+                upsert=True,
+            )
+            inserted.append("trash")
+        if road_dets:
+            coll.update_one(
+                {"_id": pothole_id},
+                {
+                    "$set": {**common, "type": "pothole",
+                             "severity_score": road_sev,
+                             "detections": road_dets},
+                    "$inc": {"report_count": 1},
+                    "$setOnInsert": on_insert,
+                },
+                upsert=True,
+            )
+            inserted.append("pothole")
+
+        # ── Track Layer: Persistent Infrastructure Health Score & ML features
+        total_sev = 0
+        if waste_dets:
+            total_sev += waste_sev * 0.3
+        if road_dets:
+            total_sev += road_sev * 1.0
+
+        if total_sev > 0:
+            asset_id = f"asset_{coord_key}"
+            # Find existing asset or initialize with synthetic ML features
+            asset = db[ASSETS_COLL].find_one({"_id": asset_id})
+            if not asset:
+                import random
+                asset = {
+                    "_id": asset_id,
+                    "geometry": geo_point,
+                    "name": f"Grid {coord_key}",
+                    "health_score": 100.0,
+                    "health_history": [{"date": now, "score": 100.0}],
+                    "traffic_volume": random.randint(1000, 20000),
+                    "rainfall_mm": random.randint(10, 150),
+                    "road_age_days": random.randint(100, 3000),
+                    "recent_damage_events": 0
+                }
+            
+            current_health = asset.get("health_score", 100.0)
+            # Decay health score
+            decay = total_sev * 0.1
+            new_health = max(0.0, current_health - decay)
+            
+            # Update damage events counter
+            new_damage_events = asset.get("recent_damage_events", 0) + 1
+            
+            # Append history
+            history = asset.get("health_history", [])
+            history.append({"date": now, "score": round(new_health, 2)})
+            
+            # Keep last 12 snapshots to prevent infinite array growth
+            if len(history) > 12:
+                history = history[-12:]
+                
+            db[ASSETS_COLL].update_one(
+                {"_id": asset_id},
+                {"$set": {
+                    "geometry": geo_point,
+                    "name": asset.get("name", f"Grid {coord_key}"),
+                    "health_score": round(new_health, 2),
+                    "health_history": history,
+                    "traffic_volume": asset.get("traffic_volume"),
+                    "rainfall_mm": asset.get("rainfall_mm"),
+                    "road_age_days": asset.get("road_age_days"),
+                    "recent_damage_events": new_damage_events
+                }},
+                upsert=True
+            )
+
+        # ── Stale-type sweep: if a prior scan at this exact spot flagged a type
+        # that isn't in the current scan, the old doc now points at an annotated
+        # image that no longer shows that issue. Soft-resolve it.
+        stale = [t for t in ("trash", "pothole") if t not in inserted]
+        if stale:
+            stale_resolved = _soft_resolve(coll, {
+                "type": {"$in": stale},
+                "location.coordinates": [lng_s, lat_s],
+            }, source="auto-stale")
+    else:
+        # Mock insertion if no DB
+        if waste_dets:
+            inserted.append("trash")
+        if road_dets:
+            inserted.append("pothole")
 
     ids = {t: f"{coord_key}:{t}" for t in inserted}
 

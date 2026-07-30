@@ -263,7 +263,7 @@ export default function ScanPage() {
                     key={`${picked?.id ?? 0}-${result ? "res" : "prev"}`}
                     src={displayImage}
                     alt="Scan"
-                    className="block w-full h-auto max-h-[500px] object-contain rounded-xl"
+                    className="block w-full h-auto max-h-[300px] object-contain rounded-xl"
                   />
                   {loading && (
                     <div className="absolute inset-0 bg-mint/5 pointer-events-none z-10 flex flex-col justify-end overflow-hidden">

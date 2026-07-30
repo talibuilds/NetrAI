@@ -14,6 +14,14 @@ import numpy as np
 import torch
 torch.set_num_threads(1)
 from PIL import Image, ImageDraw, ImageFont
+
+import sys
+try:
+    import ai_edge_litert
+    sys.modules["tflite_runtime"] = ai_edge_litert
+except ImportError:
+    pass
+
 from ultralytics import YOLO
 
 from .config import (
