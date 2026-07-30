@@ -19,18 +19,18 @@ ROAD_TFLITE = BASE_DIR / "best_int8.tflite"
 # Road model inference
 ROAD_CONF = 0.25
 ROAD_IOU = 0.45
-ROAD_IMGSZ = 640
-ROAD_MAX_DET = 300
+ROAD_IMGSZ = 320
+ROAD_MAX_DET = 100
 
 # Waste — open-vocab, low conf, tiled like the reference notebook
-WASTE_CONF = float(os.getenv("WASTE_CONF", "0.08"))
+WASTE_CONF = float(os.getenv("WASTE_CONF", "0.15"))
 WASTE_IOU = 0.45
-WASTE_MAX_DET = 300
+WASTE_MAX_DET = 100
 WASTE_TILE_SIZE = 640
 WASTE_TILE_OVERLAP = 0.35
-WASTE_FULL_IMGSZ = 1280
+WASTE_FULL_IMGSZ = 640
 WASTE_MERGE_IOU = 0.55
-WASTE_MAX_IMAGE_DIM = 4096  # resize beyond this before inference
+WASTE_MAX_IMAGE_DIM = 1280  # resize beyond this before inference
 # Tiling trades latency for small-object recall. Disable on CPU-only hosts to save RAM!
 WASTE_TILED = os.getenv("WASTE_TILED", "false").lower() == "true"
 

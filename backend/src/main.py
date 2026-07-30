@@ -97,7 +97,13 @@ app.add_middleware(
 
 def _read_image(data: bytes) -> Image.Image:
     try:
-        return ImageOps.exif_transpose(Image.open(io.BytesIO(data))).convert("RGB")
+        img = ImageOps.exif_transpose(Image.open(io.BytesIO(data))).convert("RGB")
+        # Aggressively downsize to fit in 512MB RAM
+        MAX_DIM = 1024
+        if max(img.size) > MAX_DIM:
+            s = MAX_DIM / max(img.size)
+            img = img.resize((int(img.size[0] * s), int(img.size[1] * s)), Image.LANCZOS)
+        return img
     except Exception as e:
         raise HTTPException(400, f"Invalid image: {e}")
 
@@ -164,8 +170,12 @@ async def report(
     # ── Inference with memory locks and garbage collection (prevents OOM on 512MB RAM)
     with _inference_lock:
         waste_dets, waste_stats, waste_sev, waste_imp = run_waste(_state["waste"], img)
+        gc.collect()
         road_dets, road_sev = run_road(_state["road"], img)
         gc.collect()
+
+    # Release the full image now - we only need dets from here
+    del data
 
     coll = db[MONGO_COLL] if db is not None else None
     lng_s, lat_s = _snap_coords(lng, lat)

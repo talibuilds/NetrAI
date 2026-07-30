@@ -82,14 +82,14 @@ export default function PriorityPage() {
   };
 
   return (
-    <main className="min-h-screen bg-canvas pt-[72px]">
+    <main className="min-h-screen bg-[#07070a] text-white">
       <div className="max-w-[1400px] mx-auto px-6 py-8">
         <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
           <div>
-            <h1 className="font-display text-[48px] md:text-[56px] font-black text-foreground uppercase leading-none tracking-tight mb-2">
+            <h1 className="font-sans text-[32px] md:text-[40px] font-bold text-white tracking-tight leading-tight mb-2">
               Priority List
             </h1>
-            <div className="text-[12px] text-secondary-text tracking-[0.5px]">
+            <div className="text-[14px] text-white/50">
               Municipal asset ranking based on AI predictions, traffic, and demographics.
             </div>
           </div>
@@ -109,37 +109,37 @@ export default function PriorityPage() {
           </div>
         )}
 
-        <div className="glass-panel rounded-[24px] overflow-hidden">
+        <div className="glass-panel rounded-[24px] overflow-hidden p-0 pb-2">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-image-frame bg-black/40">
-                  <th className="p-4 pl-6 font-bold text-[10px] uppercase tracking-[1.5px] text-secondary-text">
+                <tr className="border-b border-white/5 bg-black/20 text-[12px] font-medium text-white/60">
+                  <th className="p-4 pl-6">
                     <button onClick={() => toggleSort("name")} className="flex items-center gap-2 group hover:text-white transition-colors">
                       Location / Asset Name <SortIcon field="name" />
                     </button>
                   </th>
-                  <th className="p-4 font-bold text-[10px] uppercase tracking-[1.5px] text-secondary-text">
+                  <th className="p-4">
                     <button onClick={() => toggleSort("current_health")} className="flex items-center gap-2 group hover:text-white transition-colors">
                       Current Health <SortIcon field="current_health" />
                     </button>
                   </th>
-                  <th className="p-4 font-bold text-[10px] uppercase tracking-[1.5px] text-secondary-text">
+                  <th className="p-4">
                     <button onClick={() => toggleSort("predicted_health_t30")} className="flex items-center gap-2 group hover:text-white transition-colors">
                       30-Day Forecast <SortIcon field="predicted_health_t30" />
                     </button>
                   </th>
-                  <th className="p-4 font-bold text-[10px] uppercase tracking-[1.5px] text-secondary-text">
+                  <th className="p-4">
                     Risk Level
                   </th>
-                  <th className="p-4 pr-6 font-bold text-[10px] uppercase tracking-[1.5px] text-secondary-text text-right">
+                  <th className="p-4 pr-6 text-right">
                     <button onClick={() => toggleSort("priority_score")} className="flex items-center justify-end gap-2 group hover:text-white transition-colors w-full">
                       Priority Score <SortIcon field="priority_score" />
                     </button>
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-image-frame/50">
+              <tbody className="divide-y divide-white/5">
                 {loading && assets.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="p-12 text-center text-[12px] text-secondary-text uppercase tracking-[1.5px] animate-pulse">
@@ -165,26 +165,26 @@ export default function PriorityPage() {
                               #{i + 1}
                             </div>
                             <div>
-                              <div className="text-[14px] font-bold text-foreground flex items-center gap-2">
-                                {asset.name}
-                              </div>
-                              <div className="text-[10px] text-secondary-text font-mono mt-1 opacity-70">
-                                {asset.asset_id}
+                                <div className="text-[14px] font-medium text-white flex items-center gap-2">
+                                  {asset.name}
+                                </div>
+                                <div className="text-[11px] text-white/50 font-mono mt-0.5">
+                                  {asset.asset_id}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="text-[20px] font-mono font-bold text-foreground">
-                            {asset.current_health.toFixed(1)}
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex flex-col">
-                            <span className={`text-[20px] font-mono font-bold ${diff > 5 ? "text-[#ef4444]" : "text-[#f59e0b]"}`}>
-                              {asset.predicted_health_t30.toFixed(1)}
-                            </span>
-                            <span className="text-[10px] text-secondary-text font-medium flex items-center gap-1">
+                          </td>
+                          <td className="p-4">
+                            <div className="text-[16px] font-mono font-medium text-white">
+                              {asset.current_health.toFixed(1)}
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex flex-col">
+                              <span className={`text-[16px] font-mono font-medium ${diff > 5 ? "text-red-400" : "text-[#fbbf24]"}`}>
+                                {asset.predicted_health_t30.toFixed(1)}
+                              </span>
+                              <span className="text-[11px] text-white/50 font-medium flex items-center gap-1 mt-0.5">
                               <TriangleAlert className="w-3 h-3 text-destructive" />
                               -{diff.toFixed(1)} expected
                             </span>
@@ -195,11 +195,11 @@ export default function PriorityPage() {
                             {risk.label}
                           </span>
                         </td>
-                        <td className="p-4 pr-6 text-right">
-                          <div className="text-[24px] font-black font-mono text-mint-fg drop-shadow-[0_0_10px_rgba(14,165,233,0.3)]">
-                            {asset.priority_score.toFixed(1)}
-                          </div>
-                        </td>
+                          <td className="p-4 pr-6 text-right">
+                            <div className="text-[20px] font-semibold font-mono text-[#60a5fa]">
+                              {asset.priority_score.toFixed(1)}
+                            </div>
+                          </td>
                       </tr>
                     );
                   })

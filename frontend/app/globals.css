@@ -72,23 +72,23 @@
   --ring: rgba(255, 255, 255, 0.3);
 
   /* NetrAI premium dark tokens */
-  --canvas: #000000;
-  --canvas-elevated: #09090b;
-  --mint: #0ea5e9;
-  --mint-fg: #38bdf8;
-  --ultraviolet: #8b5cf6;
-  --surface-slate: #0a0a0a;
-  --surface-container: #171717;
+  --canvas: #07070a;
+  --canvas-elevated: #111116;
+  --mint: #3b82f6;
+  --mint-fg: #60a5fa;
+  --ultraviolet: #a855f7;
+  --surface-slate: #111116;
+  --surface-container: #15151a;
   --surface-low: #111111;
   --surface-lowest: #050505;
   --surface-high: #262626;
   --surface-bright: #404040;
-  --image-frame: rgba(255,255,255,0.06);
-  --secondary-text: #888888;
-  --muted-text: #ededed;
-  --deep-link: #38bdf8;
-  --purple-rule: #a78bfa;
-  --console-mint: #0ea5e9;
+  --image-frame: rgba(255,255,255,0.05);
+  --secondary-text: rgba(255,255,255,0.5);
+  --muted-text: rgba(255,255,255,0.6);
+  --deep-link: #3b82f6;
+  --purple-rule: #a855f7;
+  --console-mint: #3b82f6;
 }
 
 @theme inline {
@@ -137,8 +137,8 @@
   --color-console-mint: var(--console-mint);
 
   /* Font families */
-  --font-display: var(--font-epilogue, system-ui);
-  --font-sans: var(--font-space-grotesk, system-ui);
+  --font-display: var(--font-inter, system-ui);
+  --font-sans: var(--font-inter, system-ui);
 }
 
 @layer base {
@@ -152,19 +152,19 @@
 
 @layer utilities {
   .glass-panel {
-    @apply bg-surface-slate/80 backdrop-blur-md border border-image-frame shadow-[0_0_15px_rgba(14,165,233,0.1)];
+    @apply bg-canvas-elevated/80 backdrop-blur-xl border border-white/5 shadow-2xl rounded-[20px];
   }
   
   .btn-primary {
-    @apply bg-mint text-black text-[11px] font-bold uppercase tracking-[0.15em] px-6 py-3 rounded-[24px] transition-all hover:bg-mint-fg hover:text-white hover:shadow-[0_0_20px_rgba(14,165,233,0.5)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2;
+    @apply px-5 py-2.5 rounded-[12px] bg-white/5 border border-white/10 text-white/80 text-[13px] font-medium hover:bg-white/10 hover:text-white transition-colors flex items-center justify-center gap-2 shadow-sm;
   }
   
   .btn-secondary {
-    @apply bg-transparent border border-image-frame text-secondary-text text-[11px] font-bold uppercase tracking-[0.15em] px-6 py-3 rounded-[24px] transition-all hover:border-mint hover:text-mint-fg hover:shadow-[0_0_15px_rgba(14,165,233,0.2)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2;
+    @apply px-5 py-2.5 rounded-[12px] bg-transparent border border-white/10 text-white/70 text-[13px] font-medium hover:bg-white/5 hover:text-white transition-colors flex items-center justify-center gap-2;
   }
   
   .btn-danger {
-    @apply bg-destructive/10 border border-destructive text-destructive text-[11px] font-bold uppercase tracking-[0.15em] px-6 py-3 rounded-[24px] transition-all hover:bg-destructive hover:text-white hover:shadow-[0_0_20px_rgba(255,0,0,0.3)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2;
+    @apply px-5 py-2.5 rounded-[12px] bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] font-medium hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center gap-2 shadow-sm;
   }
 }
 

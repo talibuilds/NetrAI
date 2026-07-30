@@ -184,14 +184,14 @@ export default function ScanPage() {
   const roadSev = result?.road_severity ?? 0;
 
   return (
-    <main className="pt-[72px] min-h-screen bg-canvas">
+    <main className="min-h-screen bg-[#07070a] text-white">
       <div className="max-w-[1300px] mx-auto px-6 py-8">
         <div className="flex items-baseline justify-between mb-6">
           <div>
-            <h1 className="font-display text-[32px] md:text-[42px] font-black text-foreground uppercase leading-none tracking-tight">
+            <h1 className="font-sans text-[32px] md:text-[40px] font-bold text-white tracking-tight leading-tight">
               Scan
             </h1>
-            <div className="text-[10px] text-secondary-text uppercase tracking-[1.5px] mt-1 font-bold">
+            <div className="text-[14px] text-white/50 mt-1">
               One image · road + waste in parallel
             </div>
           </div>
@@ -250,7 +250,7 @@ export default function ScanPage() {
             )}
 
             {picked && (
-              <div className="text-[10px] text-secondary-text uppercase tracking-[1.1px] font-mono truncate">
+              <div className="text-[13px] text-white/50 font-mono truncate">
                 #{picked.id} · {picked.file.name} · {(picked.file.size / 1024).toFixed(0)} KB
               </div>
             )}
@@ -259,12 +259,12 @@ export default function ScanPage() {
               {displayImage ? (
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    key={`${picked?.id ?? 0}-${result ? "res" : "prev"}`}
-                    src={displayImage}
-                    alt="Scan"
-                    className="block w-full h-auto max-h-[300px] object-contain rounded-xl"
-                  />
+                    <img
+                      key={`${picked?.id ?? 0}-${result ? "res" : "prev"}`}
+                      src={displayImage}
+                      alt="Scan"
+                      className="block w-full h-auto max-h-[400px] object-contain rounded-[12px]"
+                    />
                   {loading && (
                     <div className="absolute inset-0 bg-mint/5 pointer-events-none z-10 flex flex-col justify-end overflow-hidden">
                       <div className="absolute w-full h-0.5 bg-mint shadow-[0_0_15px_rgba(14,165,233,1)] animate-scanner z-20"></div>
@@ -278,10 +278,10 @@ export default function ScanPage() {
                     <Upload className="h-6 w-6 text-mint" />
                   </div>
                   <div>
-                    <div className="text-[13px] font-bold text-mint-fg uppercase tracking-[1.5px] mb-1">
+                    <div className="text-[15px] font-medium text-white mb-1">
                       Upload a scan
                     </div>
-                    <div className="text-[11px] text-secondary-text font-mono">
+                    <div className="text-[13px] text-white/50 font-mono">
                       JPG, PNG, WEBP · Max 10 MB
                     </div>
                   </div>
@@ -308,7 +308,7 @@ export default function ScanPage() {
                 </button>
               )}
               {file && !result && !loading && !location && (
-                <span className="text-[11px] text-secondary-text uppercase tracking-[1.1px]">
+                <span className="text-[13px] text-white/50">
                   Location required →
                 </span>
               )}
@@ -340,15 +340,15 @@ export default function ScanPage() {
 
           <div className="flex flex-col gap-4">
             <div className="glass-panel rounded-[20px] p-5">
-              <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-mint-fg mb-4">
-                Location <span className="text-destructive">*</span>
+              <div className="text-[14px] font-medium text-white mb-4">
+                Location <span className="text-red-400">*</span>
               </div>
               <div className="flex flex-col gap-3">
                 <button
                   type="button"
                   onClick={handleGetLocation}
                   disabled={locLoading}
-                  className="w-full text-[11px] font-bold uppercase tracking-[0.12em] bg-surface-high/10 border border-image-frame px-4 py-3 rounded-[12px] hover:border-mint hover:text-mint-fg hover:bg-mint/5 transition-all disabled:opacity-50"
+                  className="w-full text-[13px] font-medium bg-white/5 border border-white/5 text-white/80 px-4 py-3 rounded-[12px] hover:border-white/10 hover:text-white hover:bg-white/10 transition-all disabled:opacity-50"
                 >
                   {locLoading ? "Getting location…" : location ? "Update Location" : "Use My Location"}
                 </button>
@@ -364,7 +364,7 @@ export default function ScanPage() {
                         lng: prev?.lng ?? 0,
                       }))
                     }
-                    className="bg-canvas border border-image-frame rounded-[8px] px-3 py-2 text-[12px] text-foreground placeholder:text-secondary-text focus:outline-none focus:border-mint"
+                    className="bg-black/40 border border-white/10 rounded-[12px] px-3 py-2 text-[13px] text-white placeholder:text-white/30 focus:outline-none focus:border-white/20"
                   />
                   <input
                     type="number"
@@ -377,7 +377,7 @@ export default function ScanPage() {
                         lng: parseFloat(e.target.value) || 0,
                       }))
                     }
-                    className="bg-canvas border border-image-frame rounded-[8px] px-3 py-2 text-[12px] text-foreground placeholder:text-secondary-text focus:outline-none focus:border-mint"
+                    className="bg-black/40 border border-white/10 rounded-[12px] px-3 py-2 text-[13px] text-white placeholder:text-white/30 focus:outline-none focus:border-white/20"
                   />
                 </div>
                 {location && (
@@ -389,10 +389,10 @@ export default function ScanPage() {
             </div>
 
             <div className="glass-panel rounded-[20px] p-5">
-              <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-mint-fg mb-4">
+              <div className="text-[14px] font-medium text-white mb-4">
                 Reporter
               </div>
-              <div className="text-[13px] text-foreground font-mono break-all bg-surface-high/10 p-3 rounded-lg border border-image-frame">
+              <div className="text-[13px] text-white/80 font-mono break-all bg-black/40 p-3 rounded-[12px] border border-white/10">
                 {email || (
                   <span className="text-secondary-text italic">Anonymous</span>
                 )}
@@ -401,20 +401,20 @@ export default function ScanPage() {
 
             {result?.waste_stats && result.waste_stats.total_detections > 0 && (
               <div className="glass-panel rounded-[20px] p-5">
-                <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#f59e0b] mb-4">
+                <div className="text-[14px] font-medium text-[#fbbf24] mb-4">
                   Waste Breakdown
                 </div>
                 <div className="flex flex-col gap-2">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-secondary-text uppercase tracking-[1.1px]">Coverage</span>
-                    <span className="text-foreground font-mono">
+                  <div className="flex justify-between text-[13px]">
+                    <span className="text-white/50">Coverage</span>
+                    <span className="text-white font-mono">
                       {result.waste_stats.total_coverage_pct.toFixed(2)}%
                     </span>
                   </div>
                   {Object.entries(result.waste_stats.category_counts).map(([cat, n]) => (
-                    <div key={cat} className="flex justify-between text-[11px]">
-                      <span className="text-secondary-text uppercase tracking-[1.1px]">{cat}</span>
-                      <span className="text-foreground font-mono">{n}</span>
+                    <div key={cat} className="flex justify-between text-[13px]">
+                      <span className="text-white/50">{cat}</span>
+                      <span className="text-white font-mono">{n}</span>
                     </div>
                   ))}
                 </div>

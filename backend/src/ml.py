@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 import torch
 torch.set_num_threads(1)
+torch.set_grad_enabled(False)  # Never need gradients — saves RAM
 from PIL import Image, ImageDraw, ImageFont
 
 import sys

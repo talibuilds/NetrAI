@@ -195,7 +195,7 @@ export default function MapPage() {
   const highCount = filteredPins.filter((p) => p.severity >= 60).length;
 
   return (
-    <main className={fullscreen ? "fixed inset-0 z-[100] bg-canvas" : "min-h-screen bg-canvas"}>
+    <main className={fullscreen ? "fixed inset-0 z-[100] bg-[#07070a]" : "min-h-screen bg-[#07070a] text-white"}>
       <div className={fullscreen ? "h-full w-full flex flex-col" : "max-w-[1400px] mx-auto px-6 py-12"}>
         {!fullscreen && (
           <>
@@ -210,12 +210,12 @@ export default function MapPage() {
             </div>
 
             <div className="flex items-baseline justify-between mb-6 flex-wrap gap-4">
-              <h1 className="font-display text-[48px] md:text-[64px] font-black text-foreground uppercase leading-none tracking-tight">
+              <h1 className="font-sans text-[32px] md:text-[40px] font-bold text-white tracking-tight leading-tight">
                 Map
               </h1>
               <Link
                 href="/scan"
-                className="bg-mint text-black text-[11px] font-bold uppercase tracking-[0.15em] px-5 py-2.5 rounded-[24px] hover:bg-foreground hover:text-canvas transition-colors flex items-center gap-2"
+                className="bg-white/5 border border-white/10 text-white/80 text-[13px] font-medium px-5 py-2.5 rounded-[12px] hover:bg-white/10 hover:text-white transition-colors flex items-center gap-2"
               >
                 <MapPin className="h-3.5 w-3.5" />
                 New Scan
@@ -245,7 +245,7 @@ export default function MapPage() {
 
         {/* Controls bar */}
         <div
-          className={`bg-surface-slate border border-image-frame ${
+          className={`bg-[#111116]/80 backdrop-blur-xl border border-white/5 ${
             fullscreen ? "rounded-none" : "rounded-[20px]"
           } p-4 flex flex-wrap items-center gap-3 ${fullscreen ? "" : "mb-4"}`}
         >
@@ -255,7 +255,7 @@ export default function MapPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search type, date, severity…"
-              className="w-full bg-canvas border border-image-frame rounded-[12px] pl-9 pr-8 py-2 text-[12px] text-foreground placeholder:text-secondary-text focus:outline-none focus:border-mint"
+              className="w-full bg-black/40 border border-white/10 rounded-[12px] pl-9 pr-8 py-2 text-[12px] text-white placeholder:text-white/30 focus:outline-none focus:border-white/20"
             />
             {search && (
               <button
@@ -319,7 +319,7 @@ export default function MapPage() {
             onClick={handleMyLocation}
             disabled={locBusy}
             title="My location"
-            className="text-[11px] font-bold uppercase tracking-[0.15em] border border-image-frame text-secondary-text px-3 py-2 rounded-[20px] hover:border-mint hover:text-mint-fg transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="text-[12px] font-medium border border-white/5 text-white/50 px-3 py-2 rounded-[12px] hover:border-white/10 hover:text-white transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             <Crosshair className="h-3.5 w-3.5" />
             {locBusy ? "…" : "Me"}
@@ -328,7 +328,7 @@ export default function MapPage() {
           <button
             onClick={() => setFullscreen((v) => !v)}
             title={fullscreen ? "Exit fullscreen (Esc)" : "Fullscreen"}
-            className="text-[11px] font-bold uppercase tracking-[0.15em] border border-image-frame text-secondary-text px-3 py-2 rounded-[20px] hover:border-mint hover:text-mint-fg transition-colors flex items-center gap-2"
+            className="text-[12px] font-medium border border-white/5 text-white/50 px-3 py-2 rounded-[12px] hover:border-white/10 hover:text-white transition-colors flex items-center gap-2"
           >
             {fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
             {fullscreen ? "Exit" : "Full"}
@@ -353,7 +353,7 @@ export default function MapPage() {
           }
         >
           <div
-            className={`relative bg-surface-slate border border-image-frame overflow-hidden ${
+            className={`relative bg-[#111116] border border-white/5 overflow-hidden ${
               fullscreen ? "rounded-none" : "rounded-[20px]"
             }`}
             style={fullscreen ? undefined : { height: 560 }}
@@ -394,12 +394,12 @@ export default function MapPage() {
 
           {/* Next to move sidebar */}
           <aside
-            className={`bg-surface-slate border border-image-frame flex flex-col ${
+            className={`bg-[#111116]/80 backdrop-blur-xl border border-white/5 flex flex-col ${
               fullscreen ? "rounded-none border-l-0 h-full" : "rounded-[20px]"
             }`}
             style={fullscreen ? undefined : { maxHeight: 560 }}
           >
-            <div className="px-4 py-3 border-b border-image-frame flex items-center justify-between">
+            <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
               <div>
                 <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-foreground">
                   Next to move
@@ -532,12 +532,12 @@ function StatCard({
   const accentColor =
     accent === "mint" ? "text-mint-fg" : accent === "amber" ? "text-[#f59e0b]" : accent === "red" ? "text-[#ef4444]" : "text-foreground";
   return (
-    <div className="bg-surface-slate border border-image-frame rounded-[16px] p-4">
-      <div className="text-[10px] text-secondary-text uppercase tracking-[1.1px] mb-1">
+    <div className="bg-[#111116]/80 backdrop-blur-xl border border-white/5 rounded-[16px] p-4 flex flex-col justify-between h-[120px]">
+      <div className="text-[13px] font-medium text-white/60 mb-2">
         {label}
       </div>
-      <div className={`text-[24px] font-bold font-mono ${accentColor}`}>{value}</div>
-      {sub && <div className="text-[10px] text-secondary-text/60 mt-0.5">{sub}</div>}
+      <div className={`text-[32px] font-semibold tracking-tight leading-none ${accentColor}`}>{value}</div>
+      {sub && <div className="text-[11px] text-white/40 mt-1">{sub}</div>}
     </div>
   );
 }

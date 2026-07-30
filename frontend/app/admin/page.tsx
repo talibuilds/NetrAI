@@ -280,14 +280,14 @@ export default function IssueTrackerPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-canvas">
-      <div className="max-w-[1400px] mx-auto px-6 py-8 pt-[72px]">
+    <main className="min-h-screen bg-[#07070a] text-white">
+      <div className="max-w-[1400px] mx-auto px-6 py-8">
         <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
           <div>
-            <h1 className="font-display text-[48px] md:text-[56px] font-black text-foreground uppercase leading-none tracking-tight mb-2">
+            <h1 className="font-sans text-[32px] md:text-[40px] font-bold text-white tracking-tight leading-tight mb-2">
               Admin Dashboard
             </h1>
-            <div className="text-[12px] text-secondary-text tracking-[0.5px] flex items-center gap-2">
+            <div className="text-[14px] text-white/50 flex items-center gap-2">
               {counts.all.toLocaleString()} issues · {counts.critical} critical · live sync every 5s
               {isAdmin && (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[1.5px] text-[#22c55e] border border-[#22c55e]/50 bg-[#22c55e]/10 px-2 py-0.5 rounded-[6px] shadow-[0_0_10px_rgba(34,197,94,0.2)]">
@@ -318,27 +318,27 @@ export default function IssueTrackerPage() {
 
         {/* Dashboard Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between">
-            <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text mb-2">Total Issues</div>
-            <div className="text-[36px] font-black text-foreground">{counts.all}</div>
+          <div className="glass-panel p-5 flex flex-col justify-between h-[140px]">
+            <div className="text-[13px] font-medium text-white/60 mb-2">Total Issues</div>
+            <div className="text-[36px] font-semibold tracking-tight text-[#60a5fa] leading-none">{counts.all}</div>
           </div>
-          <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between border-b-4 border-b-[#ef4444]">
-            <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#ef4444] mb-2">Critical</div>
-            <div className="text-[36px] font-black text-foreground">{counts.critical}</div>
+          <div className="glass-panel p-5 flex flex-col justify-between h-[140px]">
+            <div className="text-[13px] font-medium text-[#f87171] mb-2">Critical</div>
+            <div className="text-[36px] font-semibold tracking-tight text-[#f87171] leading-none">{counts.critical}</div>
           </div>
-          <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between border-b-4 border-b-[#f59e0b]">
-            <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#f59e0b] mb-2">In Progress</div>
-            <div className="text-[36px] font-black text-foreground">{counts.process}</div>
+          <div className="glass-panel p-5 flex flex-col justify-between h-[140px]">
+            <div className="text-[13px] font-medium text-[#fbbf24] mb-2">In Progress</div>
+            <div className="text-[36px] font-semibold tracking-tight text-[#fbbf24] leading-none">{counts.process}</div>
           </div>
-          <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between border-b-4 border-b-[#22c55e]">
-            <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#22c55e] mb-2">Resolved</div>
-            <div className="text-[36px] font-black text-foreground">{counts.completed}</div>
+          <div className="glass-panel p-5 flex flex-col justify-between h-[140px]">
+            <div className="text-[13px] font-medium text-[#4ade80] mb-2">Resolved</div>
+            <div className="text-[36px] font-semibold tracking-tight text-[#4ade80] leading-none">{counts.completed}</div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 h-[250px]">
-          <div className="glass-panel p-5 rounded-2xl flex flex-col">
-            <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text mb-4">Issues by Type</div>
+          <div className="glass-panel p-5 flex flex-col">
+            <div className="text-[13px] font-medium text-white/60 mb-4">Issues by Type</div>
             <div className="flex-1 min-h-0">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={typeData}>
@@ -353,8 +353,8 @@ export default function IssueTrackerPage() {
               </ResponsiveContainer>
             </div>
           </div>
-          <div className="glass-panel p-5 rounded-2xl flex flex-col">
-            <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-secondary-text mb-4">Severity Distribution</div>
+          <div className="glass-panel p-5 flex flex-col">
+            <div className="text-[13px] font-medium text-white/60 mb-4">Severity Distribution</div>
             <div className="flex-1 min-h-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -385,7 +385,7 @@ export default function IssueTrackerPage() {
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-2 mb-6 bg-surface-high/10 p-2 rounded-2xl border border-image-frame">
+        <div className="flex flex-wrap items-center gap-2 mb-6 bg-white/5 p-2 rounded-2xl border border-white/5">
           <div className="flex gap-1 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
             {chips.map((chip) => {
               const active = isActive(filter, chip.filter);
@@ -393,10 +393,10 @@ export default function IssueTrackerPage() {
                 <button
                   key={chip.label}
                   onClick={() => setFilter(chip.filter)}
-                  className={`text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-2 rounded-[14px] transition-all whitespace-nowrap ${
+                  className={`text-[12px] font-medium px-4 py-2 rounded-[12px] transition-all whitespace-nowrap ${
                     active
-                      ? "bg-mint text-black shadow-[0_0_10px_rgba(14,165,233,0.3)]"
-                      : "text-secondary-text hover:bg-surface-high/30 hover:text-white"
+                      ? "bg-white/10 text-white shadow-sm"
+                      : "text-white/50 hover:bg-white/5 hover:text-white"
                   }`}
                 >
                   {chip.label} ({chip.count})
@@ -411,7 +411,7 @@ export default function IssueTrackerPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search issues…"
-              className="w-full bg-black/40 border border-image-frame rounded-[14px] pl-9 pr-3 py-2 text-[12px] text-foreground placeholder:text-secondary-text focus:outline-none focus:border-mint transition-colors"
+              className="w-full bg-black/40 border border-white/10 rounded-[12px] pl-9 pr-3 py-2 text-[12px] text-white placeholder:text-white/30 focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
 
@@ -419,14 +419,14 @@ export default function IssueTrackerPage() {
             onClick={() =>
               setSortBy((s) => (s === "severity" ? "time" : s === "time" ? "reports" : "severity"))
             }
-            className="text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-2 rounded-[14px] bg-black/40 border border-image-frame text-secondary-text hover:border-mint hover:text-mint-fg transition-colors flex items-center gap-2"
+            className="text-[12px] font-medium px-4 py-2 rounded-[12px] bg-black/40 border border-white/5 text-white/50 hover:border-white/10 hover:text-white transition-colors flex items-center gap-2"
           >
             Sort: {sortBy}
           </button>
         </div>
 
-        <div className="glass-panel rounded-2xl overflow-visible">
-          <div className="grid grid-cols-[1.4fr_1.2fr_0.7fr_0.7fr_0.6fr_1.1fr_0.7fr] gap-2 px-5 py-3 border-b border-image-frame text-[10px] font-bold uppercase tracking-[1.5px] text-secondary-text bg-canvas/50">
+        <div className="glass-panel overflow-visible p-0 pb-2">
+          <div className="grid grid-cols-[1.4fr_1.2fr_0.7fr_0.7fr_0.6fr_1.1fr_0.7fr] gap-2 px-6 py-4 border-b border-white/5 text-[12px] font-medium text-white/60 bg-black/20">
             <div>Issue</div>
             <div>Location</div>
             <div>Severity</div>
@@ -458,7 +458,7 @@ export default function IssueTrackerPage() {
                 <li
                   key={r.id}
                   onClick={() => setSelectedReportId(r.id)}
-                  className="grid grid-cols-[1.4fr_1.2fr_0.7fr_0.7fr_0.6fr_1.1fr_0.7fr] gap-2 px-5 py-3 border-b border-image-frame/50 last:border-0 items-center hover:bg-canvas/40 transition-colors cursor-pointer group"
+                  className="grid grid-cols-[1.4fr_1.2fr_0.7fr_0.7fr_0.6fr_1.1fr_0.7fr] gap-2 px-6 py-4 border-b border-white/5 last:border-0 items-center hover:bg-white/5 transition-colors cursor-pointer group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {r.image ? (
@@ -474,20 +474,20 @@ export default function IssueTrackerPage() {
                       </div>
                     )}
                     <div className="min-w-0">
-                      <div className="text-[13px] font-bold text-foreground truncate">
+                      <div className="text-[13px] font-medium text-white truncate">
                         {issueLabel(r.type)}
                       </div>
-                      <div className="text-[10px] text-secondary-text/70 uppercase tracking-[1.1px] font-mono">
-                        ID: DM-{shortId(r.id)}
+                      <div className="text-[11px] text-white/50 uppercase font-mono mt-0.5">
+                        DM-{shortId(r.id)}
                       </div>
                     </div>
                   </div>
 
                   <div className="min-w-0">
-                    <div className="text-[12px] text-foreground font-mono truncate">
+                    <div className="text-[13px] text-white font-mono truncate">
                       {r.coordinates[1].toFixed(5)}, {r.coordinates[0].toFixed(5)}
                     </div>
-                    <div className="text-[10px] text-secondary-text/70 uppercase tracking-[1.1px]">
+                    <div className="text-[11px] text-white/50 mt-0.5">
                       {r.type === "pothole" ? "Road surface" : "Waste site"}
                     </div>
                   </div>
@@ -577,7 +577,7 @@ function StatusDropdown({
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full mt-1 z-50 min-w-[150px] bg-canvas border border-image-frame rounded-[10px] shadow-lg overflow-hidden">
+        <div className="absolute left-0 top-full mt-1 z-50 min-w-[150px] bg-[#111116] border border-white/10 rounded-[12px] shadow-2xl overflow-hidden p-1">
           {options.map((o) => {
             const s = DISPLAY_STATUS_STYLE[o];
             const isCurrent = o === current;
@@ -589,7 +589,7 @@ function StatusDropdown({
                   onToggle(false);
                   if (!isCurrent) onChange(reportId, o);
                 }}
-                className={`w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold uppercase tracking-[1.5px] hover:bg-surface-slate transition ${
+                className={`w-full flex items-center justify-between px-3 py-2 text-[11px] font-medium uppercase hover:bg-white/5 rounded-lg transition ${
                   isCurrent ? "opacity-50 cursor-default" : ""
                 } ${s.text}`}
               >

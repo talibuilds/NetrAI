@@ -1,0 +1,21 @@
+{
+  "settings_version": "0.0.6",
+  "datasets_dir": "D:\\TALIB\\Projects\\datasets",
+  "weights_dir": "D:\\TALIB\\Projects\\NetrAI\\weights",
+  "runs_dir": "D:\\TALIB\\Projects\\NetrAI\\runs",
+  "uuid": "7a465d6057c7c05aeaabff274b0da2f349652d2d7f1d76d82dd84a7a02592218",
+  "sync": true,
+  "api_key": "",
+  "openai_api_key": "",
+  "clearml": true,
+  "comet": true,
+  "dvc": true,
+  "hub": true,
+  "mlflow": true,
+  "neptune": true,
+  "raytune": true,
+  "tensorboard": false,
+  "wandb": false,
+  "vscode_msg": true,
+  "openvino_msg": true
+}
