@@ -12,8 +12,8 @@ os.environ["YOLO_CONFIG_DIR"] = os.environ.get("YOLO_CONFIG_DIR", str(BASE_DIR /
 os.environ["MPLCONFIGDIR"] = os.environ.get("MPLCONFIGDIR", str(BASE_DIR / ".mpl_config"))
 
 # ───────────────────────── Model Config ───────────────────────── #
-# Use standard YOLOv8 nano to prevent OOM on 512MB instances
-WASTE_MODEL = os.getenv("WASTE_MODEL", "yolov8n.pt")
+# Use ONNX Runtime for waste detection (no torch needed)
+WASTE_MODEL = os.getenv("WASTE_MODEL", str(BASE_DIR / "yolov8n.onnx"))
 ROAD_TFLITE = BASE_DIR / "best_int8.tflite"
 
 # Road model inference
@@ -23,16 +23,11 @@ ROAD_IMGSZ = 320
 ROAD_MAX_DET = 100
 
 # Waste — open-vocab, low conf, tiled like the reference notebook
-WASTE_CONF = float(os.getenv("WASTE_CONF", "0.15"))
-WASTE_IOU = 0.45
-WASTE_MAX_DET = 100
-WASTE_TILE_SIZE = 640
-WASTE_TILE_OVERLAP = 0.35
+WASTE_CONF = float(os.getenv("WASTE_CONF", "0.25"))
+WASTE_MAX_DET = 50
 WASTE_FULL_IMGSZ = 640
 WASTE_MERGE_IOU = 0.55
-WASTE_MAX_IMAGE_DIM = 1280  # resize beyond this before inference
-# Tiling trades latency for small-object recall. Disable on CPU-only hosts to save RAM!
-WASTE_TILED = os.getenv("WASTE_TILED", "false").lower() == "true"
+WASTE_MAX_IMAGE_DIM = 1024  # resize beyond this before inference
 
 # Open-vocabulary prompts passed to YOLO-E.
 TRASH_PROMPTS = [

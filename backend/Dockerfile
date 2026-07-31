@@ -5,12 +5,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_PROJECT_ENVIRONMENT=/app/.venv \
     OMP_NUM_THREADS=1 \
-    MKL_NUM_THREADS=1
+    MKL_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1
 
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgomp1 libglib2.0-0 libgl1 libsm6 libxrender1 libxext6 curl ca-certificates git \
+    libgomp1 libglib2.0-0 libgl1 libsm6 libxrender1 libxext6 curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir uv
@@ -19,13 +20,6 @@ RUN pip install --no-cache-dir uv
 COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
-
-# Swap the default CUDA torch wheels for CPU-only — saves ~2 GB
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --python /app/.venv/bin/python \
-        --index-url https://download.pytorch.org/whl/cpu \
-        --force-reinstall \
-        torch
 
 # ultralytics's TFLite backend imports `tflite_runtime`, but upstream doesn't
 # publish wheels for Python 3.12. Alias to ai-edge-litert (already in deps).
@@ -39,12 +33,14 @@ with open(f"{p}/tflite_runtime/interpreter.py", "w") as f:
     f.write("from ai_edge_litert.interpreter import Interpreter, load_delegate\n")
 PY
 
-# Pre-download YOLOv8 nano weights (only 6.5 MB) so first /report isn't cold
-COPY yolov8n.pt ./
-RUN /app/.venv/bin/python -c "from ultralytics import YOLO; YOLO('yolov8n.pt')"
+# Copy models (small: 12 MB ONNX + 11 MB TFLite)
+COPY yolov8n.onnx ./
+COPY best_int8.tflite ./
+
+# Verify ONNX loads
+RUN /app/.venv/bin/python -c "import onnxruntime; print('onnxruntime', onnxruntime.__version__)"
 
 COPY src ./src
-COPY best_int8.tflite ./
 
 EXPOSE 8000
 

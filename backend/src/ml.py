@@ -1,29 +1,21 @@
 """Model loading, inference, severity scoring, and annotation drawing.
 
-Waste → open-vocabulary YOLO-E large seg with tiled inference (matches the
-reference notebook). Road → single-class TFLite pothole detector.
+Waste → YOLOv8n via ONNX Runtime (no torch, ~30 MB RAM).
+Road  → TFLite int8 pothole detector via ai_edge_litert.
+
+Total runtime memory: ~150 MB (vs ~400 MB with torch+ultralytics).
 """
 from __future__ import annotations
 
 import io
+import math
 import os
 from collections import Counter
 from pathlib import Path
 
+import cv2
 import numpy as np
-import torch
-torch.set_num_threads(1)
-torch.set_grad_enabled(False)  # Never need gradients — saves RAM
 from PIL import Image, ImageDraw, ImageFont
-
-import sys
-try:
-    import ai_edge_litert
-    sys.modules["tflite_runtime"] = ai_edge_litert
-except ImportError:
-    pass
-
-from ultralytics import YOLO
 
 from .config import (
     CATEGORY_COLORS,
@@ -31,72 +23,320 @@ from .config import (
     HEURISTIC_KEYWORDS,
     ROAD_CONF,
     ROAD_IMGSZ,
-    ROAD_IOU,
     ROAD_LABEL,
     ROAD_MAX_DET,
     ROAD_TFLITE,
-    TRASH_PROMPTS,
     WASTE_CONF,
     WASTE_FULL_IMGSZ,
-    WASTE_IOU,
     WASTE_MAX_DET,
     WASTE_MAX_IMAGE_DIM,
     WASTE_MERGE_IOU,
     WASTE_MODEL,
-    WASTE_TILED,
-    WASTE_TILE_OVERLAP,
-    WASTE_TILE_SIZE,
 )
 
-DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
-USE_HALF = DEVICE.startswith("cuda")
+
+# ─────────────────── ONNX Runtime Waste Model ─────────────────── #
+
+class OnnxWasteModel:
+    """YOLOv8n loaded via ONNX Runtime — no torch needed."""
+
+    # Standard COCO classes that correspond to urban waste/litter
+    COCO_WASTE_IDS = {39, 40, 41, 42, 43, 44, 45, 73, 75}
+    # 39=bottle 40=wine glass 41=cup 42=fork 43=knife 44=spoon 45=bowl 73=book 75=vase
+
+    COCO_NAMES = {
+        0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorcycle', 4: 'airplane',
+        5: 'bus', 6: 'train', 7: 'truck', 8: 'boat', 9: 'traffic light',
+        10: 'fire hydrant', 11: 'stop sign', 12: 'parking meter', 13: 'bench',
+        14: 'bird', 15: 'cat', 16: 'dog', 17: 'horse', 18: 'sheep', 19: 'cow',
+        20: 'elephant', 21: 'bear', 22: 'zebra', 23: 'giraffe', 24: 'backpack',
+        25: 'umbrella', 26: 'handbag', 27: 'tie', 28: 'suitcase', 29: 'frisbee',
+        30: 'skis', 31: 'snowboard', 32: 'sports ball', 33: 'kite',
+        34: 'baseball bat', 35: 'baseball glove', 36: 'skateboard', 37: 'surfboard',
+        38: 'tennis racket', 39: 'bottle', 40: 'wine glass', 41: 'cup',
+        42: 'fork', 43: 'knife', 44: 'spoon', 45: 'bowl', 46: 'banana',
+        47: 'apple', 48: 'sandwich', 49: 'orange', 50: 'broccoli', 51: 'carrot',
+        52: 'hot dog', 53: 'pizza', 54: 'donut', 55: 'cake', 56: 'chair',
+        57: 'couch', 58: 'potted plant', 59: 'bed', 60: 'dining table',
+        61: 'toilet', 62: 'tv', 63: 'laptop', 64: 'mouse', 65: 'remote',
+        66: 'keyboard', 67: 'cell phone', 68: 'microwave', 69: 'oven',
+        70: 'toaster', 71: 'sink', 72: 'refrigerator', 73: 'book',
+        74: 'clock', 75: 'vase', 76: 'scissors', 77: 'teddy bear',
+        78: 'hair drier', 79: 'toothbrush',
+    }
+
+    def __init__(self, onnx_path: str):
+        import onnxruntime as ort
+        opts = ort.SessionOptions()
+        opts.inter_op_num_threads = 1
+        opts.intra_op_num_threads = 2
+        opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        self.session = ort.InferenceSession(onnx_path, opts, providers=["CPUExecutionProvider"])
+        meta = self.session.get_inputs()[0]
+        self.input_name = meta.name
+        self.input_shape = meta.shape  # [1, 3, H, W]
+        print(f"[model] ONNX waste ready: {Path(onnx_path).name}  input={self.input_shape}")
+
+    def _preprocess(self, img: Image.Image, imgsz: int) -> tuple[np.ndarray, float, float, float]:
+        """Letterbox + normalise to [1, 3, imgsz, imgsz] float32."""
+        iw, ih = img.size
+        scale = min(imgsz / iw, imgsz / ih)
+        nw, nh = int(iw * scale), int(ih * scale)
+        resized = img.resize((nw, nh), Image.BILINEAR)
+        canvas = Image.new("RGB", (imgsz, imgsz), (114, 114, 114))
+        pad_x, pad_y = (imgsz - nw) // 2, (imgsz - nh) // 2
+        canvas.paste(resized, (pad_x, pad_y))
+        arr = np.asarray(canvas, dtype=np.float32) / 255.0  # HWC
+        arr = arr.transpose(2, 0, 1)[np.newaxis]  # 1CHW
+        return arr, scale, pad_x, pad_y
+
+    def predict(self, img: Image.Image, conf: float, imgsz: int, max_det: int) -> list[dict]:
+        blob, scale, px, py = self._preprocess(img, imgsz)
+        outputs = self.session.run(None, {self.input_name: blob})
+        # YOLOv8 ONNX output shape: [1, 84, 8400] → transpose to [8400, 84]
+        preds = outputs[0][0].T  # (8400, 84)
+        boxes_xywh = preds[:, :4]
+        scores = preds[:, 4:]
+        cls_ids = scores.argmax(axis=1)
+        confs = scores[np.arange(len(scores)), cls_ids]
+
+        # Filter by confidence
+        mask = confs >= conf
+        boxes_xywh = boxes_xywh[mask]
+        cls_ids = cls_ids[mask]
+        confs = confs[mask]
+
+        if len(confs) == 0:
+            return []
+
+        # Convert xywh → xyxy
+        x_c, y_c, w, h = boxes_xywh[:, 0], boxes_xywh[:, 1], boxes_xywh[:, 2], boxes_xywh[:, 3]
+        x1 = x_c - w / 2
+        y1 = y_c - h / 2
+        x2 = x_c + w / 2
+        y2 = y_c + h / 2
+
+        # Undo letterbox padding
+        x1 = (x1 - px) / scale
+        y1 = (y1 - py) / scale
+        x2 = (x2 - px) / scale
+        y2 = (y2 - py) / scale
+
+        # NMS
+        boxes_for_nms = np.stack([x1, y1, x2, y2], axis=1).astype(np.float32)
+        indices = self._nms(boxes_for_nms, confs, iou_thresh=0.45)
+        indices = indices[:max_det]
+
+        results = []
+        for i in indices:
+            cid = int(cls_ids[i])
+            # Only keep waste-related COCO classes
+            if cid not in self.COCO_WASTE_IDS:
+                continue
+            results.append({
+                "xyxy": [float(x1[i]), float(y1[i]), float(x2[i]), float(y2[i])],
+                "conf": float(confs[i]),
+                "raw": self.COCO_NAMES.get(cid, str(cid)),
+                "polygon": None,
+            })
+        return results
+
+    @staticmethod
+    def _nms(boxes: np.ndarray, scores: np.ndarray, iou_thresh: float) -> list[int]:
+        """Simple greedy NMS."""
+        order = scores.argsort()[::-1]
+        keep = []
+        x1, y1, x2, y2 = boxes[:, 0], boxes[:, 1], boxes[:, 2], boxes[:, 3]
+        areas = (x2 - x1) * (y2 - y1)
+        suppressed = np.zeros(len(scores), dtype=bool)
+        for idx in order:
+            if suppressed[idx]:
+                continue
+            keep.append(int(idx))
+            ix1 = np.maximum(x1[idx], x1)
+            iy1 = np.maximum(y1[idx], y1)
+            ix2 = np.minimum(x2[idx], x2)
+            iy2 = np.minimum(y2[idx], y2)
+            inter = np.maximum(0, ix2 - ix1) * np.maximum(0, iy2 - iy1)
+            iou = inter / (areas[idx] + areas - inter + 1e-9)
+            suppressed |= iou > iou_thresh
+            suppressed[idx] = False  # don't suppress self
+        return keep
+
+
+# ─────────────────── TFLite Road Model ─────────────────── #
+
+class TfliteRoadModel:
+    """TFLite int8 pothole detector via ai_edge_litert."""
+
+    def __init__(self, tflite_path: str):
+        from ai_edge_litert.interpreter import Interpreter
+        self.interp = Interpreter(model_path=tflite_path, num_threads=4)
+        self.interp.allocate_tensors()
+        inp = self.interp.get_input_details()[0]
+        out = self.interp.get_output_details()
+        self.input_idx = inp["index"]
+        self.input_shape = inp["shape"]  # e.g. [1, 320, 320, 3]
+        self.input_dtype = inp["dtype"]
+        self.output_details = out
+
+        # Quantization params
+        self.input_scale = inp.get("quantization_parameters", {}).get("scales", [1.0])
+        self.input_zp = inp.get("quantization_parameters", {}).get("zero_points", [0])
+        if hasattr(self.input_scale, '__len__') and len(self.input_scale) > 0:
+            self.input_scale = float(self.input_scale[0])
+        else:
+            self.input_scale = 1.0
+        if hasattr(self.input_zp, '__len__') and len(self.input_zp) > 0:
+            self.input_zp = int(self.input_zp[0])
+        else:
+            self.input_zp = 0
+
+        print(f"[model] TFLite road ready: {Path(tflite_path).name}  "
+              f"input={list(self.input_shape)} dtype={self.input_dtype.__name__}")
+
+    def predict(self, img: Image.Image, conf: float, max_det: int) -> list[dict]:
+        h, w = int(self.input_shape[1]), int(self.input_shape[2])
+        orig_w, orig_h = img.size
+
+        # Letterbox resize
+        scale = min(w / orig_w, h / orig_h)
+        nw, nh = int(orig_w * scale), int(orig_h * scale)
+        resized = img.resize((nw, nh), Image.BILINEAR)
+        canvas = Image.new("RGB", (w, h), (114, 114, 114))
+        px, py = (w - nw) // 2, (h - nh) // 2
+        canvas.paste(resized, (px, py))
+
+        arr = np.asarray(canvas, dtype=np.float32) / 255.0
+
+        # Quantize if int8
+        if self.input_dtype == np.int8:
+            arr = (arr / self.input_scale + self.input_zp).clip(-128, 127).astype(np.int8)
+        elif self.input_dtype == np.uint8:
+            arr = (arr / self.input_scale + self.input_zp).clip(0, 255).astype(np.uint8)
+
+        arr = arr[np.newaxis]  # [1, H, W, 3]
+        print("Invoking TFLite...")
+        self.interp.set_tensor(self.input_idx, arr)
+        self.interp.invoke()
+        print("TFLite invoke done")
+
+        # Read output — YOLOv8 TFLite output: [1, num_classes+4, num_boxes]
+        raw_out = self.interp.get_tensor(self.output_details[0]["index"])
+
+        # Dequantize if needed
+        out_params = self.output_details[0].get("quantization_parameters", {})
+        out_scale = out_params.get("scales", [1.0])
+        out_zp = out_params.get("zero_points", [0])
+        if hasattr(out_scale, '__len__') and len(out_scale) > 0:
+            out_scale = float(out_scale[0])
+        else:
+            out_scale = 1.0
+        if hasattr(out_zp, '__len__') and len(out_zp) > 0:
+            out_zp = int(out_zp[0])
+        else:
+            out_zp = 0
+
+        if raw_out.dtype != np.float32:
+            raw_out = (raw_out.astype(np.float32) - out_zp) * out_scale
+
+        preds = raw_out[0]  # [num_classes+4, num_boxes]
+        # Could be [num_boxes, num_classes+4] — detect orientation
+        if preds.shape[0] > preds.shape[1]:
+            preds = preds.T  # now [num_classes+4, num_boxes]
+
+        # Transpose to [num_boxes, num_classes+4]
+        preds = preds.T
+
+        boxes_xywh = preds[:, :4]
+        scores = preds[:, 4:]
+
+        if scores.ndim == 1:
+            confs = scores
+            cls_ids = np.zeros(len(scores), dtype=int)
+        else:
+            cls_ids = scores.argmax(axis=1)
+            confs = scores[np.arange(len(scores)), cls_ids]
+
+        mask = confs >= conf
+        boxes_xywh = boxes_xywh[mask]
+        confs = confs[mask]
+
+        if len(confs) == 0:
+            return []
+
+        x_c, y_c, bw, bh = boxes_xywh[:, 0], boxes_xywh[:, 1], boxes_xywh[:, 2], boxes_xywh[:, 3]
+        x1 = (x_c - bw / 2 - px) / scale
+        y1 = (y_c - bh / 2 - py) / scale
+        x2 = (x_c + bw / 2 - px) / scale
+        y2 = (y_c + bh / 2 - py) / scale
+
+        # Clip to image bounds
+        x1 = np.clip(x1, 0, orig_w)
+        y1 = np.clip(y1, 0, orig_h)
+        x2 = np.clip(x2, 0, orig_w)
+        y2 = np.clip(y2, 0, orig_h)
+
+        # NMS
+        boxes_for_nms = np.stack([x1, y1, x2, y2], axis=1).astype(np.float32)
+        areas = (x2 - x1) * (y2 - y1)
+        order = confs.argsort()[::-1]
+        keep = []
+        suppressed = np.zeros(len(confs), dtype=bool)
+        for idx in order:
+            if suppressed[idx]:
+                continue
+            keep.append(int(idx))
+            if len(keep) >= max_det:
+                break
+            ix1 = np.maximum(x1[idx], x1)
+            iy1 = np.maximum(y1[idx], y1)
+            ix2 = np.minimum(x2[idx], x2)
+            iy2 = np.minimum(y2[idx], y2)
+            inter = np.maximum(0, ix2 - ix1) * np.maximum(0, iy2 - iy1)
+            iou = inter / (areas[idx] + areas - inter + 1e-9)
+            suppressed |= iou > 0.45
+            suppressed[idx] = False
+
+        results = []
+        for i in keep:
+            results.append({
+                "label": ROAD_LABEL,
+                "confidence": float(confs[i]),
+                "box": {"x1": int(x1[i]), "y1": int(y1[i]), "x2": int(x2[i]), "y2": int(y2[i])},
+            })
+        return results
 
 
 # ───────────────────────── Model loading ───────────────────────── #
-def load_waste() -> YOLO | None:
-    """Load YOLO (nano/small)."""
-    print(f"[model] loading waste → {WASTE_MODEL} on {DEVICE} (auto-download if needed)")
+
+def load_waste() -> OnnxWasteModel | None:
+    """Load YOLOv8n ONNX model."""
+    onnx_path = Path(WASTE_MODEL)
+    if not onnx_path.exists():
+        print(f"[model] waste ONNX missing → {onnx_path}")
+        return None
     try:
-        m = YOLO(str(WASTE_MODEL))
+        return OnnxWasteModel(str(onnx_path))
     except Exception as e:
         print(f"[model] waste load failed: {type(e).__name__}: {e}")
         return None
-        
-    if "world" in str(WASTE_MODEL).lower():
-        try:
-            text_pe = m.get_text_pe(TRASH_PROMPTS)
-            m.set_classes(TRASH_PROMPTS, text_pe)
-        except Exception as e:
-            print(f"[model] get_text_pe unavailable ({e}); falling back to set_classes")
-            try:
-                m.set_classes(TRASH_PROMPTS)
-            except Exception as e2:
-                print(f"[model] set_classes failed: {e2}")
-    
-    print(f"[model] waste ready · half={USE_HALF}")
-    return m
 
 
-def load_road() -> YOLO | None:
+def load_road() -> TfliteRoadModel | None:
+    """Load TFLite road detector."""
     path = Path(ROAD_TFLITE)
     if not path.exists():
         print(f"[model] road tflite missing → {path.name}")
         return None
-    print(f"[model] loading road  → {path.name}")
-    return YOLO(str(path), task="detect")
+    try:
+        return TfliteRoadModel(str(path))
+    except Exception as e:
+        print(f"[model] road load failed: {type(e).__name__}: {e}")
+        return None
 
 
 # ───────────────────────── Generic helpers ───────────────────────── #
-def _iou(a: dict, b: dict) -> float:
-    ix1, iy1 = max(a["x1"], b["x1"]), max(a["y1"], b["y1"])
-    ix2, iy2 = min(a["x2"], b["x2"]), min(a["y2"], b["y2"])
-    inter = max(0.0, ix2 - ix1) * max(0.0, iy2 - iy1)
-    if inter <= 0:
-        return 0.0
-    aa = max(0.0, a["x2"] - a["x1"]) * max(0.0, a["y2"] - a["y1"])
-    ba = max(0.0, b["x2"] - b["x1"]) * max(0.0, b["y2"] - b["y1"])
-    return inter / (aa + ba - inter + 1e-9)
-
 
 def _iou_xyxy(a: list[float], b: list[float]) -> float:
     ax1, ay1, ax2, ay2 = a
@@ -128,7 +368,7 @@ def _waste_severity(area_pct: float, conf: float, meta: dict, pw: float) -> floa
 
 
 def _waste_impact(area_pct: float, meta: dict) -> float:
-    decomp_norm = min(np.log1p(meta["decomp_years"]) / np.log1p(1_000_000), 1.0)
+    decomp_norm = min(math.log1p(meta["decomp_years"]) / math.log1p(1_000_000), 1.0)
     score = (0.4 * meta["pollution"] + 0.3 * meta["hazard"] + 0.3 * decomp_norm) * 100
     return round(score * (0.5 + 0.5 * min(area_pct / 20.0, 1.0)), 2)
 
@@ -146,131 +386,17 @@ def _road_severity(detections: list, img_area: float) -> float:
     return round(min((base + area_pct * 2.0) * (0.7 + 0.3 * avg_conf), 100.0), 2)
 
 
-# ───────────────────────── Road pipeline (tflite, single pass) ───────────────────────── #
-def _predict_road(model: YOLO, img: Image.Image) -> list:
-    r = model.predict(img, conf=ROAD_CONF, iou=ROAD_IOU, imgsz=ROAD_IMGSZ, max_det=ROAD_MAX_DET, verbose=False)
-    out: list = []
-    if not r or r[0].boxes is None:
-        return out
-    names = model.names
-    for box in r[0].boxes:
-        cls_id = int(box.cls[0])
-        label = names.get(cls_id, str(cls_id)) if isinstance(names, dict) else names[cls_id]
-        x1, y1, x2, y2 = (float(v) for v in box.xyxy[0].tolist())
-        out.append({
-            "label": label,
-            "confidence": float(box.conf[0]),
-            "box": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
-        })
-    return out
+# ───────────────────── Road pipeline ───────────────────── #
 
-
-def _dedupe_labelled(dets: list, iou_thresh: float) -> list:
-    dets = sorted(dets, key=lambda d: d["confidence"], reverse=True)
-    kept: list = []
-    for d in dets:
-        if not any(k["label"] == d["label"] and _iou(k["box"], d["box"]) > iou_thresh for k in kept):
-            kept.append(d)
-    return kept
-
-
-def run_road(model: YOLO | None, img: Image.Image) -> tuple[list, float]:
+def run_road(model: TfliteRoadModel | None, img: Image.Image) -> tuple[list, float]:
     if model is None:
         return [], 0.0
     W, H = img.size
-    raw = _dedupe_labelled(_predict_road(model, img), iou_thresh=0.5)
-    detections = [
-        {
-            "label": ROAD_LABEL,
-            "confidence": round(r["confidence"], 4),
-            "box": {"x1": int(r["box"]["x1"]), "y1": int(r["box"]["y1"]),
-                    "x2": int(r["box"]["x2"]), "y2": int(r["box"]["y2"])},
-        }
-        for r in raw
-    ]
+    detections = model.predict(img, conf=ROAD_CONF, max_det=ROAD_MAX_DET)
     return detections, _road_severity(detections, float(W * H))
 
 
-# ───────────────────────── Waste pipeline (YOLO-E, tiled) ───────────────────────── #
-# Standard COCO classes that roughly correspond to urban waste/litter
-COCO_WASTE_CLASSES = {"bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "book", "vase"}
-
-def _waste_pass(model: YOLO, img: Image.Image, x_off: float, y_off: float, imgsz: int) -> list:
-    r = model.predict(
-        img,
-        conf=WASTE_CONF,
-        iou=WASTE_IOU,
-        imgsz=imgsz,
-        max_det=WASTE_MAX_DET,
-        device=DEVICE,
-        half=USE_HALF,
-        verbose=False,
-    )
-    if not r:
-        return []
-    res = r[0]
-    masks_xy = res.masks.xy if (hasattr(res, "masks") and res.masks is not None) else None
-    names = model.names
-    out = []
-    if res.boxes is None:
-        return out
-        
-    is_world = "world" in str(WASTE_MODEL).lower()
-        
-    for i, box in enumerate(res.boxes):
-        bx1, by1, bx2, by2 = box.xyxy[0].cpu().numpy()[:4]
-        cls_id = int(box.cls[0])
-        label = names.get(cls_id, str(cls_id)) if isinstance(names, dict) else names[cls_id]
-        
-        # If it's a standard COCO model, filter out non-waste items like 'person', 'car'
-        if not is_world and label.lower() not in COCO_WASTE_CLASSES:
-            continue
-            
-        poly = None
-        if masks_xy is not None and i < len(masks_xy) and len(masks_xy[i]) >= 3:
-            poly = [(float(px + x_off), float(py + y_off)) for px, py in masks_xy[i]]
-        out.append({
-            "xyxy": [float(bx1 + x_off), float(by1 + y_off), float(bx2 + x_off), float(by2 + y_off)],
-            "conf": float(box.conf[0]),
-            "raw": label,
-            "polygon": poly,
-        })
-    return out
-
-
-def _merge_waste_raws(raws: list) -> list:
-    if not raws:
-        return []
-    for r in raws:
-        r["_canon"] = _resolve_category(r["raw"])[0]
-    raws = sorted(raws, key=lambda d: -d["conf"])
-    kept: list = []
-    for d in raws:
-        if not any(k["_canon"] == d["_canon"] and _iou_xyxy(d["xyxy"], k["xyxy"]) > WASTE_MERGE_IOU for k in kept):
-            kept.append(d)
-    return kept
-
-
-def _waste_tile_predict(model: YOLO, img: Image.Image) -> list:
-    # Non-tiled path (CPU-friendly): single 1280 full-image pass.
-    if not WASTE_TILED:
-        return _merge_waste_raws(_waste_pass(model, img, 0.0, 0.0, WASTE_FULL_IMGSZ))
-
-    W, H = img.size
-    stride = max(1, int(WASTE_TILE_SIZE * (1 - WASTE_TILE_OVERLAP)))
-
-    xs = sorted(set(list(range(0, max(1, W - WASTE_TILE_SIZE + 1), stride)) + [max(0, W - WASTE_TILE_SIZE)]))
-    ys = sorted(set(list(range(0, max(1, H - WASTE_TILE_SIZE + 1), stride)) + [max(0, H - WASTE_TILE_SIZE)]))
-
-    all_raws: list = []
-    for y in ys:
-        for x in xs:
-            x2, y2 = min(x + WASTE_TILE_SIZE, W), min(y + WASTE_TILE_SIZE, H)
-            tile = img.crop((x, y, x2, y2))
-            all_raws.extend(_waste_pass(model, tile, float(x), float(y), WASTE_TILE_SIZE))
-    all_raws.extend(_waste_pass(model, img, 0.0, 0.0, WASTE_FULL_IMGSZ))
-    return _merge_waste_raws(all_raws)
-
+# ───────────────────── Waste pipeline ───────────────────── #
 
 def _maybe_resize(img: Image.Image) -> Image.Image:
     if max(img.size) <= WASTE_MAX_IMAGE_DIM:
@@ -279,7 +405,7 @@ def _maybe_resize(img: Image.Image) -> Image.Image:
     return img.resize((int(img.size[0] * s), int(img.size[1] * s)), Image.LANCZOS)
 
 
-def run_waste(model: YOLO | None, img: Image.Image) -> tuple[list, dict, float, float]:
+def run_waste(model: OnnxWasteModel | None, img: Image.Image) -> tuple[list, dict, float, float]:
     empty_stats = {"total_detections": 0, "total_coverage_pct": 0.0, "class_counts": {}, "category_counts": {}}
     if model is None:
         return [], empty_stats, 0.0, 0.0
@@ -287,7 +413,20 @@ def run_waste(model: YOLO | None, img: Image.Image) -> tuple[list, dict, float, 
     img = _maybe_resize(img)
     W, H = img.size
     img_area = float(W * H)
-    raw = _waste_tile_predict(model, img)
+
+    # Single pass — no tiling (saves RAM)
+    raw = model.predict(img, conf=WASTE_CONF, imgsz=WASTE_FULL_IMGSZ, max_det=WASTE_MAX_DET)
+
+    # Deduplicate
+    if raw:
+        for r in raw:
+            r["_canon"] = _resolve_category(r["raw"])[0]
+        raw.sort(key=lambda d: -d["conf"])
+        kept: list = []
+        for d in raw:
+            if not any(k["_canon"] == d["_canon"] and _iou_xyxy(d["xyxy"], k["xyxy"]) > WASTE_MERGE_IOU for k in kept):
+                kept.append(d)
+        raw = kept
 
     detections: list = []
     for r in raw:
@@ -307,8 +446,7 @@ def run_waste(model: YOLO | None, img: Image.Image) -> tuple[list, dict, float, 
             "environmental_impact": _waste_impact(area_pct, meta),
             "recyclable": meta["recyclable"],
             "decomp_years": meta["decomp_years"],
-            # leading underscore → transient, stripped before Mongo insert
-            "_polygon": r.get("polygon"),
+            "_polygon": None,
         })
 
     if detections:
@@ -329,6 +467,7 @@ def run_waste(model: YOLO | None, img: Image.Image) -> tuple[list, dict, float, 
 
 
 # ───────────────────────── Annotation ───────────────────────── #
+
 def _load_font(size: int):
     for p in (
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
@@ -355,13 +494,8 @@ def annotate(img: Image.Image, waste_dets: list, road_dets: list, waste_sev: flo
 
     for d in merged:
         color = CATEGORY_COLORS.get(d["category"], (156, 163, 175))
-        poly = d.get("_polygon")
-        if poly and len(poly) >= 3:
-            draw.polygon(poly, fill=(*color, 80), outline=(*color, 255))
-        else:
-            b = d["box"]
-            draw.rectangle((b["x1"], b["y1"], b["x2"], b["y2"]), outline=(*color, 255), width=3)
         b = d["box"]
+        draw.rectangle((b["x1"], b["y1"], b["x2"], b["y2"]), outline=(*color, 255), width=3)
         lbl = f"{d['label']} {d['confidence']*100:.0f}%"
         tb = draw.textbbox((b["x1"], b["y1"]), lbl, font=f_sm)
         pad = 4
@@ -381,5 +515,5 @@ def annotate(img: Image.Image, waste_dets: list, road_dets: list, waste_sev: flo
 
     out = Image.alpha_composite(base, overlay).convert("RGB")
     buf = io.BytesIO()
-    out.save(buf, format="PNG", optimize=True)
+    out.save(buf, format="JPEG", quality=85)
     return buf.getvalue()
